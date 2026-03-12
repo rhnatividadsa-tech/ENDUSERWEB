@@ -101,9 +101,7 @@ export default function PledgePage() {
   return (
     <View style={styles.container}>
       
-      {/* ========================================= */}
-      {/* CONFIRMATION MODAL OVERLAY                  */}
-      {/* ========================================= */}
+      {/* CONFIRMATION MODAL OVERLAY */}
       {showModal && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -123,25 +121,27 @@ export default function PledgePage() {
 
               <Text style={styles.summaryLabel}>Volunteering:</Text>
               <Text style={styles.summaryValue}>
-                {volunteerChoice === 'yes' 
-                  ? `Yes (${volunteerRoles.find(r => r.id === selectedRole)?.title} Role)` 
-                  : 'No'}
+                {volunteerChoice === 'yes' ? `Yes (${volunteerRoles.find(r => r.id === selectedRole)?.title} Role)` : 'No'}
               </Text>
             </View>
 
-            <Pressable style={styles.checkboxRow} onPress={() => setIsConfirmed(!isConfirmed)}>
-              <View style={[styles.checkbox, isConfirmed && styles.checkboxChecked]}>
-                {isConfirmed && <Text style={styles.checkmark}>✓</Text>}
-              </View>
-              <Text style={styles.checkboxText}>I confirm that all details provided are correct and I commit to this pledge.</Text>
+            <Pressable style={styles.checkboxRowModal} onPress={() => setIsConfirmed(!isConfirmed)}>
+              {({ hovered }: any) => (
+                <>
+                  <View style={[styles.checkbox, styles.animated, isConfirmed && styles.checkboxChecked, hovered && !isConfirmed && { borderColor: '#2D8A61' }]}>
+                    {isConfirmed && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={[styles.checkboxText, styles.animated, hovered && !isConfirmed && { color: '#2D8A61' }]}>I confirm that all details provided are correct and I commit to this pledge.</Text>
+                </>
+              )}
             </Pressable>
 
             <View style={styles.modalActions}>
-              <Pressable style={styles.cancelBtn} onPress={() => setShowModal(false)}>
+              <Pressable style={(state: any) => [styles.cancelBtn, styles.animated, state.hovered && { backgroundColor: '#CBD5E1' }]} onPress={() => setShowModal(false)}>
                 <Text style={styles.cancelBtnText}>Back</Text>
               </Pressable>
               <Pressable 
-                style={[styles.confirmBtn, !isConfirmed && styles.confirmBtnDisabled]} 
+                style={(state: any) => [styles.confirmBtn, styles.animated, !isConfirmed && styles.confirmBtnDisabled, state.hovered && isConfirmed && { transform: [{ scale: 1.02 }], boxShadow: '0px 4px 12px rgba(45, 138, 97, 0.3)' }, state.pressed && isConfirmed && { transform: [{ scale: 0.98 }] }]} 
                 onPress={handleFinalConfirm}
                 disabled={!isConfirmed}
               >
@@ -158,40 +158,48 @@ export default function PledgePage() {
       {/* NAVIGATION BAR */}
       <View style={styles.navBar}>
         <View style={styles.navLeft}>
-          <Image source={{ uri: '/logo_b.png' }} style={styles.logoImage} resizeMode="contain" />
+          <Pressable onPress={() => router.push('/')} style={({ hovered }: any) => [styles.animated, hovered && { transform: [{ scale: 1.05 }] }]}>
+            <Image source={{ uri: '/logo_b.png' }} style={styles.logoImage} resizeMode="contain" />
+          </Pressable>
           <View style={styles.navLinks}>
-            <Pressable onPress={() => router.push('/')}><Text style={styles.navLink}>Home</Text></Pressable>
-            <Pressable onPress={() => router.push('/about')}><Text style={styles.navLink}>About Us</Text></Pressable>
+            <Pressable onPress={() => router.push('/')}>
+              {({ hovered }: any) => <Text style={[styles.navLink, styles.animated, hovered && { color: '#4273B8' }]}>Home</Text>}
+            </Pressable>
+            <Pressable onPress={() => router.push('/about')}>
+              {({ hovered }: any) => <Text style={[styles.navLink, styles.animated, hovered && { color: '#4273B8' }]}>About Us</Text>}
+            </Pressable>
           </View>
         </View>
 
         <View style={styles.navRight}>
-          <Pressable style={styles.iconButton}>
+          <Pressable style={({ hovered }: any) => [styles.iconButton, styles.animated, hovered && { transform: [{ scale: 1.1 }] }]}>
             <Image source={{ uri: '/icon-bell.png' }} style={styles.navIcon} resizeMode="contain" />
           </Pressable>
-          <View style={styles.userProfile}>
+          <Pressable style={({ hovered }: any) => [styles.userProfile, styles.animated, hovered && { opacity: 0.7 }]}>
             <Image source={{ uri: '/icon-user.png' }} style={styles.navIcon} resizeMode="contain" />
             <View>
               <Text style={styles.userName}>User</Text>
               <Text style={styles.userRole}>Role</Text>
             </View>
-          </View>
+          </Pressable>
         </View>
       </View>
 
-      {/* MAIN BODY AREA */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={styles.pageBody}>
-          <Image source={{ uri: '/hero-bg.png' }} style={styles.bgImage} resizeMode="cover" />
-          <View style={styles.bgOverlay} />
+      {/* PAGE BODY */}
+      <View style={styles.pageBody}>
+        <Image source={{ uri: '/hero-bg.png' }} style={styles.bgImage} resizeMode="cover" />
+        <View style={styles.bgOverlay} />
 
-          {/* Locked Height Content Card */}
-          <View style={styles.contentCard}>
+        {/* LOCKED WHITE CARD (MAXIMIZED) */}
+        <View style={styles.contentWrapper}>
+          
+          <View style={styles.headerBannerGreen}>
+            <Text style={styles.bannerText}>Pledge Donation</Text>
+          </View>
+
+          {/* MASTER INNER SCROLLVIEW */}
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 30, paddingTop: 10 }} showsVerticalScrollIndicator={false}>
             
-            <View style={styles.headerBanner}>
-              <Text style={styles.bannerText}>Pledge Donation</Text>
-            </View>
-
             <View style={styles.formGrid}>
               
               {/* LEFT COLUMN: Site & Time */}
@@ -199,7 +207,7 @@ export default function PledgePage() {
                 <Text style={styles.fieldLabel}>Select Site Location</Text>
                 <View style={{ position: 'relative', zIndex: 100 }}>
                   <Pressable 
-                    style={[styles.pickerBox, showErrors && !isSiteValid && styles.errorBorder]} 
+                    style={(state: any) => [styles.pickerBox, styles.animated, showErrors && !isSiteValid && styles.errorBorder, state.hovered && { borderColor: '#2D8A61', backgroundColor: '#F0FDF4' }]} 
                     onPress={() => { setIsSiteDropdownOpen(!isSiteDropdownOpen); setIsTimeDropdownOpen(false); }}
                   >
                     <Text style={[styles.pickerText, !isSiteValid && {color: '#888'}]}>"{selectedSite}"</Text>
@@ -213,7 +221,7 @@ export default function PledgePage() {
                         {ustBuildings.map((building, index) => (
                           <Pressable 
                             key={index} 
-                            style={styles.dropdownItem}
+                            style={(state: any) => [styles.dropdownItem, styles.animated, state.hovered && { backgroundColor: '#F3F4F6', paddingLeft: 20 }]} 
                             onPress={() => { setSelectedSite(building); setIsSiteDropdownOpen(false); if(showErrors) setShowErrors(false); }}
                           >
                             <Text style={styles.dropdownItemText}>{building}</Text>
@@ -227,7 +235,7 @@ export default function PledgePage() {
                 <Text style={[styles.fieldLabel, { marginTop: 40 }]}>Select Time Slot</Text>
                 <View style={{ position: 'relative', zIndex: 90 }}>
                   <Pressable 
-                    style={[styles.pickerBox, showErrors && !isTimeValid && styles.errorBorder]} 
+                    style={(state: any) => [styles.pickerBox, styles.animated, showErrors && !isTimeValid && styles.errorBorder, state.hovered && { borderColor: '#2D8A61', backgroundColor: '#F0FDF4' }]} 
                     onPress={() => { setIsTimeDropdownOpen(!isTimeDropdownOpen); setIsSiteDropdownOpen(false); }}
                   >
                     <Text style={[styles.pickerText, !isTimeValid && {color: '#888'}]}>"{selectedTime}"</Text>
@@ -241,7 +249,7 @@ export default function PledgePage() {
                         {timeSlots.map((time, index) => (
                           <Pressable 
                             key={index} 
-                            style={styles.dropdownItem}
+                            style={(state: any) => [styles.dropdownItem, styles.animated, state.hovered && { backgroundColor: '#F3F4F6', paddingLeft: 20 }]} 
                             onPress={() => { setSelectedTime(time); setIsTimeDropdownOpen(false); }}
                           >
                             <Text style={styles.dropdownItemText}>{time}</Text>
@@ -269,7 +277,7 @@ export default function PledgePage() {
                       return (
                         <View key={index} style={styles.itemRow}>
                           <TextInput 
-                            style={[styles.qtyBox, showInputError && styles.errorBorder]} 
+                            style={[styles.qtyBox, styles.animated, showInputError && styles.errorBorder]} 
                             value={item.qty} 
                             onChangeText={(text) => updateItem(index, 'qty', text)}
                             placeholder="No."
@@ -277,13 +285,16 @@ export default function PledgePage() {
                             keyboardType="numeric"
                           />
                           <TextInput 
-                            style={[styles.nameBox, showInputError && styles.errorBorder]} 
+                            style={[styles.nameBox, styles.animated, showInputError && styles.errorBorder]} 
                             value={item.name} 
                             onChangeText={(text) => updateItem(index, 'name', text)}
                             placeholder='"Item Name"'
                             placeholderTextColor="#999"
                           />
-                          <Pressable style={styles.removeBtn} onPress={() => removeItem(index)}>
+                          <Pressable 
+                            style={(state: any) => [styles.removeBtn, styles.animated, state.hovered && { backgroundColor: '#FFCaca' }, state.pressed && { transform: [{ scale: 0.9 }] }]} 
+                            onPress={() => removeItem(index)}
+                          >
                             <Text style={styles.removeBtnText}>✕</Text>
                           </Pressable>
                         </View>
@@ -292,7 +303,13 @@ export default function PledgePage() {
                   </ScrollView>
                 </View>
                 {showErrors && !isItemsValid && <Text style={styles.errorText}>● Input Details is required.</Text>}
-                <Pressable style={styles.addItemBtn} onPress={addItem}><Text style={styles.addItemBtnText}>+ ADD ITEM</Text></Pressable>
+                
+                <Pressable 
+                  style={(state: any) => [styles.addItemBtn, styles.animated, state.hovered && { backgroundColor: '#D1D5DB' }, state.pressed && { transform: [{ scale: 0.95 }] }]} 
+                  onPress={addItem}
+                >
+                  <Text style={styles.addItemBtnText}>+ ADD ITEM</Text>
+                </Pressable>
               </View>
 
               {/* RIGHT COLUMN: Volunteer Roles & Submit */}
@@ -300,20 +317,20 @@ export default function PledgePage() {
                 
                 {/* Fixed Top Section */}
                 <View>
-                  <Text style={styles.fieldLabel}>Do You Want to Volunteer ?</Text>
+                  <Text style={styles.fieldLabel}>Do You Want to Volunteer?</Text>
                   <View style={styles.toggleRow}>
                     <Pressable 
-                      style={[styles.toggleBtn, volunteerChoice === 'yes' && styles.toggleBtnActive, showErrors && volunteerChoice === null && styles.errorBorder]}
+                      style={(state: any) => [styles.toggleBtn, styles.animated, volunteerChoice === 'yes' && styles.toggleBtnActiveGreen, showErrors && volunteerChoice === null && styles.errorBorder, state.hovered && volunteerChoice !== 'yes' && { backgroundColor: '#D1D5DB' }]}
                       onPress={() => setVolunteerChoice('yes')}
                     >
-                      <Text style={[styles.toggleText, volunteerChoice === 'yes' && styles.toggleTextActive]}>Yes, view roles</Text>
+                      <Text style={[styles.toggleText, volunteerChoice === 'yes' && styles.toggleTextActiveGreen]}>Yes, view roles</Text>
                     </Pressable>
                     
                     <Pressable 
-                      style={[styles.toggleBtn, volunteerChoice === 'no' && styles.toggleBtnActive, showErrors && volunteerChoice === null && styles.errorBorder]}
+                      style={(state: any) => [styles.toggleBtn, styles.animated, volunteerChoice === 'no' && styles.toggleBtnActiveGreen, showErrors && volunteerChoice === null && styles.errorBorder, state.hovered && volunteerChoice !== 'no' && { backgroundColor: '#D1D5DB' }]}
                       onPress={() => { setVolunteerChoice('no'); setSelectedRole(null); }}
                     >
-                      <Text style={[styles.toggleText, volunteerChoice === 'no' && styles.toggleTextActive]}>No</Text>
+                      <Text style={[styles.toggleText, volunteerChoice === 'no' && styles.toggleTextActiveGreen]}>No</Text>
                     </Pressable>
                   </View>
                   {showErrors && volunteerChoice === null && <Text style={styles.errorText}>● Please select an option.</Text>}
@@ -328,7 +345,7 @@ export default function PledgePage() {
                         {volunteerRoles.map(role => (
                           <Pressable 
                             key={role.id}
-                            style={[styles.roleCard, selectedRole === role.id && styles.roleCardActive, showErrors && volunteerChoice === 'yes' && selectedRole === null && styles.errorBorder]}
+                            style={(state: any) => [styles.roleCard, styles.animated, selectedRole === role.id && styles.roleCardActiveGreen, showErrors && volunteerChoice === 'yes' && selectedRole === null && styles.errorBorder, state.hovered && selectedRole !== role.id && styles.roleCardHoverGreen]}
                             onPress={() => setSelectedRole(role.id)}
                           >
                             <View style={styles.roleIconBox}>
@@ -354,24 +371,32 @@ export default function PledgePage() {
                             {selectedRole === 'medic' && (
                               <View style={styles.uploadRow}>
                                 <View style={styles.uploadInfo}><Text style={styles.docIcon}>📄</Text><Text style={styles.uploadText}>Upload Medical License</Text></View>
-                                <Pressable style={styles.uploadBtn}><Text style={styles.uploadBtnText}>Upload</Text></Pressable>
+                                <Pressable style={(state: any) => [styles.uploadBtnGreen, styles.animated, state.hovered && {backgroundColor: '#1E6545'}, state.pressed && styles.btnPress]}>
+                                  <Text style={styles.uploadBtnText}>Upload</Text>
+                                </Pressable>
                               </View>
                             )}
                             {selectedRole === 'logistics' && (
                               <View style={styles.uploadRow}>
                                 <View style={styles.uploadInfo}><Text style={styles.docIcon}>📄</Text><Text style={styles.uploadText}>Upload Valid Driver's License</Text></View>
-                                <Pressable style={styles.uploadBtn}><Text style={styles.uploadBtnText}>Upload</Text></Pressable>
+                                <Pressable style={(state: any) => [styles.uploadBtnGreen, styles.animated, state.hovered && {backgroundColor: '#1E6545'}, state.pressed && styles.btnPress]}>
+                                  <Text style={styles.uploadBtnText}>Upload</Text>
+                                </Pressable>
                               </View>
                             )}
                             {selectedRole === 'field' && (
                               <>
                                 <View style={styles.uploadRow}>
                                   <View style={styles.uploadInfo}><Text style={styles.docIcon}>📄</Text><Text style={styles.uploadText}>Upload Photo ID</Text></View>
-                                  <Pressable style={styles.uploadBtn}><Text style={styles.uploadBtnText}>Upload</Text></Pressable>
+                                  <Pressable style={(state: any) => [styles.uploadBtnGreen, styles.animated, state.hovered && {backgroundColor: '#1E6545'}, state.pressed && styles.btnPress]}>
+                                    <Text style={styles.uploadBtnText}>Upload</Text>
+                                  </Pressable>
                                 </View>
                                 <View style={styles.uploadRow}>
                                   <View style={styles.uploadInfo}><Text style={styles.docIcon}>📄</Text><Text style={styles.uploadText}>Upload Background Check Auth.</Text></View>
-                                  <Pressable style={styles.uploadBtn}><Text style={styles.uploadBtnText}>Upload</Text></Pressable>
+                                  <Pressable style={(state: any) => [styles.uploadBtnGreen, styles.animated, state.hovered && {backgroundColor: '#1E6545'}, state.pressed && styles.btnPress]}>
+                                    <Text style={styles.uploadBtnText}>Upload</Text>
+                                  </Pressable>
                                 </View>
                               </>
                             )}
@@ -380,25 +405,37 @@ export default function PledgePage() {
                           {/* VETTING CHECKBOXES */}
                           <Text style={[styles.fieldLabel, { fontSize: 14, marginTop: 15, marginBottom: 8 }]}>Checkbox for Vetting:</Text>
                           <View style={styles.checkboxGroup}>
-                            <Pressable style={styles.checkboxRowSmall} onPress={() => toggleCheckbox('background')}>
-                              <View style={[styles.checkboxSquareSmall, checkboxes.background && styles.checkboxSquareActive, showErrors && !checkboxes.background && styles.errorBorder]}>
-                                {checkboxes.background && <Text style={styles.checkmarkSmall}>✓</Text>}
-                              </View>
-                              <Text style={[styles.checkboxLabelSmall, showErrors && !checkboxes.background && {color: '#E53E3E'}]}>I agree to a background check.</Text>
+                            <Pressable onPress={() => toggleCheckbox('background')}>
+                              {({ hovered }: any) => (
+                                <View style={[styles.checkboxRowSmall, styles.animated, hovered && { opacity: 0.8 }]}>
+                                  <View style={[styles.checkboxSquareSmall, styles.animated, checkboxes.background && styles.checkboxSquareActive, showErrors && !checkboxes.background && styles.errorBorder, hovered && !checkboxes.background && { borderColor: '#2D8A61' }]}>
+                                    {checkboxes.background && <Text style={styles.checkmarkSmall}>✓</Text>}
+                                  </View>
+                                  <Text style={[styles.checkboxLabelSmall, styles.animated, showErrors && !checkboxes.background && {color: '#E53E3E'}, hovered && !checkboxes.background && { color: '#2D8A61' }]}>I agree to a background check.</Text>
+                                </View>
+                              )}
                             </Pressable>
 
-                            <Pressable style={styles.checkboxRowSmall} onPress={() => toggleCheckbox('documents')}>
-                              <View style={[styles.checkboxSquareSmall, checkboxes.documents && styles.checkboxSquareActive, showErrors && !checkboxes.documents && styles.errorBorder]}>
-                                {checkboxes.documents && <Text style={styles.checkmarkSmall}>✓</Text>}
-                              </View>
-                              <Text style={[styles.checkboxLabelSmall, showErrors && !checkboxes.documents && {color: '#E53E3E'}]}>I have uploaded all required documents.</Text>
+                            <Pressable onPress={() => toggleCheckbox('documents')}>
+                              {({ hovered }: any) => (
+                                <View style={[styles.checkboxRowSmall, styles.animated, hovered && { opacity: 0.8 }]}>
+                                  <View style={[styles.checkboxSquareSmall, styles.animated, checkboxes.documents && styles.checkboxSquareActive, showErrors && !checkboxes.documents && styles.errorBorder, hovered && !checkboxes.documents && { borderColor: '#2D8A61' }]}>
+                                    {checkboxes.documents && <Text style={styles.checkmarkSmall}>✓</Text>}
+                                  </View>
+                                  <Text style={[styles.checkboxLabelSmall, styles.animated, showErrors && !checkboxes.documents && {color: '#E53E3E'}, hovered && !checkboxes.documents && { color: '#2D8A61' }]}>I have uploaded all required documents.</Text>
+                                </View>
+                              )}
                             </Pressable>
 
-                            <Pressable style={styles.checkboxRowSmall} onPress={() => toggleCheckbox('age')}>
-                              <View style={[styles.checkboxSquareSmall, checkboxes.age && styles.checkboxSquareActive, showErrors && !checkboxes.age && styles.errorBorder]}>
-                                {checkboxes.age && <Text style={styles.checkmarkSmall}>✓</Text>}
-                              </View>
-                              <Text style={[styles.checkboxLabelSmall, showErrors && !checkboxes.age && {color: '#E53E3E'}]}>I confirm I am over 18 years old.</Text>
+                            <Pressable onPress={() => toggleCheckbox('age')}>
+                              {({ hovered }: any) => (
+                                <View style={[styles.checkboxRowSmall, styles.animated, hovered && { opacity: 0.8 }]}>
+                                  <View style={[styles.checkboxSquareSmall, styles.animated, checkboxes.age && styles.checkboxSquareActive, showErrors && !checkboxes.age && styles.errorBorder, hovered && !checkboxes.age && { borderColor: '#2D8A61' }]}>
+                                    {checkboxes.age && <Text style={styles.checkmarkSmall}>✓</Text>}
+                                  </View>
+                                  <Text style={[styles.checkboxLabelSmall, styles.animated, showErrors && !checkboxes.age && {color: '#E53E3E'}, hovered && !checkboxes.age && { color: '#2D8A61' }]}>I confirm I am over 18 years old.</Text>
+                                </View>
+                              )}
                             </Pressable>
                           </View>
                         </View>
@@ -415,7 +452,10 @@ export default function PledgePage() {
                       ● Please address all required fields highlighted above.
                     </Text>
                   )}
-                  <Pressable style={styles.submitPledgeBtn} onPress={handleInitialSubmit}>
+                  <Pressable 
+                    style={(state: any) => [styles.submitPledgeBtn, styles.animated, state.hovered && styles.btnHoverGreen, state.pressed && styles.btnPress]} 
+                    onPress={handleInitialSubmit}
+                  >
                     <Text style={styles.submitBtnText}>Submit Pledge Donation</Text>
                   </Pressable>
                 </View>
@@ -423,15 +463,16 @@ export default function PledgePage() {
               </View>
 
             </View>
-          </View>
+          </ScrollView>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF', height: '100vh', position: 'relative' } as any,
+  container: { flex: 1, backgroundColor: '#FFFFFF', height: '100vh', overflow: 'hidden' } as any,
+  
   navBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 40, height: 100, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E5E7EB', zIndex: 10 } as any,
   navLeft: { flexDirection: 'row', alignItems: 'center', gap: 40 } as any,
   logoImage: { width: 65, height: 65 },
@@ -444,23 +485,27 @@ const styles = StyleSheet.create({
   userName: { fontSize: 17, fontWeight: '600', color: '#111827' },
   userRole: { fontSize: 13, color: '#6B7280' },
 
-  pageBody: { flex: 1, alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' } as any,
+  pageBody: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20, position: 'relative', overflow: 'hidden' } as any,
   bgImage: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%' },
   bgOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#0F172A', opacity: 0.75 },
 
-  // Locked height prevents the UI from expanding and jumping
-  contentCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 30, width: '95%', maxWidth: 1250, height: '85%', minHeight: 650, maxHeight: 800, boxShadow: '0px 15px 45px rgba(0, 0, 0, 0.4)', zIndex: 2, display: 'flex', flexDirection: 'column' } as any,
-  
-  headerBanner: { backgroundColor: '#2D8A61', borderRadius: 15, paddingVertical: 15, alignItems: 'center', marginBottom: 30 },
-  bannerText: { color: '#FFFFFF', fontSize: 32, fontWeight: 'bold' },
+  contentWrapper: { backgroundColor: '#FFFFFF', borderRadius: 24, paddingHorizontal: 40, paddingTop: 40, width: '98%', maxWidth: 1600, height: '95%', minHeight: 650, maxHeight: 1000, display: 'flex', flexDirection: 'column', boxShadow: '0px 15px 45px rgba(0, 0, 0, 0.4)', zIndex: 2, overflow: 'hidden' } as any,
+  headerBannerGreen: { backgroundColor: '#2D8A61', borderRadius: 12, paddingVertical: 18, alignItems: 'center', marginBottom: 15 },
+  bannerText: { color: '#FFFFFF', fontSize: 28, fontWeight: 'bold', letterSpacing: 0.5 },
 
-  formGrid: { flexDirection: 'row', gap: 40, flex: 1 } as any,
+  errorBorder: { borderColor: '#E53E3E', borderWidth: 1, backgroundColor: '#FFF5F5' },
+  errorText: { color: '#E53E3E', fontSize: 12, marginTop: 4, fontWeight: 'bold' },
+
+  // ANIMATIONS
+  animated: { transition: 'all 0.2s ease-in-out' } as any,
+  btnHoverGreen: { transform: [{ scale: 1.02 }], opacity: 0.95, boxShadow: '0px 4px 15px rgba(45, 138, 97, 0.3)' } as any,
+  btnPress: { transform: [{ scale: 0.98 }], opacity: 0.8 } as any,
+  roleCardHoverGreen: { borderColor: '#2D8A61', backgroundColor: '#F0FDF4', transform: [{ translateY: -2 }], boxShadow: '0px 6px 15px rgba(0,0,0,0.06)' } as any,
+
+  formGrid: { flexDirection: 'row', gap: 60, flex: 1 } as any,
   formColumn: { flex: 1 },
   fieldLabel: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: '#111' },
 
-  errorBorder: { borderColor: '#E53E3E', borderWidth: 1, backgroundColor: '#FFF5F5' },
-  errorText: { color: '#E53E3E', fontSize: 12, marginTop: 6, fontWeight: '500' },
-  
   pickerBox: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#E5E7EB', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#CCCCCC' } as any,
   pickerText: { fontSize: 15, color: '#111' },
   pickerArrow: { fontSize: 14, fontWeight: 'bold', color: '#555' },
@@ -471,28 +516,26 @@ const styles = StyleSheet.create({
   itemHeaders: { flexDirection: 'row', gap: 10, marginBottom: 5, paddingHorizontal: 5 } as any,
   qtyHeader: { width: 55, textAlign: 'center', fontSize: 13, fontWeight: 'bold', color: '#555' },
   nameHeader: { flex: 1, fontSize: 13, fontWeight: 'bold', color: '#555' },
-  
-  // Flex 1 ensures it fills the middle column but stops perfectly at the Add Item button
-  itemsOuterFrame: { flex: 1, borderWidth: 1, borderColor: '#CCCCCC', borderRadius: 10, padding: 10, backgroundColor: '#FAFAFA' },
+  itemsOuterFrame: { flex: 1, borderWidth: 1, borderColor: '#CCCCCC', borderRadius: 10, padding: 12, backgroundColor: '#FAFAFA' },
   itemsScroll: { flex: 1 },
   itemRow: { flexDirection: 'row', gap: 10, marginBottom: 10, alignItems: 'center' } as any,
-  qtyBox: { width: 55, backgroundColor: '#E5E7EB', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#CCCCCC', textAlign: 'center', color: '#000' } as any,
-  nameBox: { flex: 1, backgroundColor: '#E5E7EB', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#CCCCCC', color: '#000' } as any,
+  qtyBox: { width: 55, backgroundColor: '#E5E7EB', paddingVertical: 10, paddingHorizontal: 10, borderRadius: 8, borderWidth: 1, borderColor: '#CCCCCC', textAlign: 'center', color: '#000', fontSize: 14 } as any,
+  nameBox: { flex: 1, backgroundColor: '#E5E7EB', paddingVertical: 10, paddingHorizontal: 15, borderRadius: 8, borderWidth: 1, borderColor: '#CCCCCC', color: '#000', fontSize: 14 } as any,
   
   removeBtn: { width: 35, height: 35, backgroundColor: '#FFEDED', borderRadius: 8, borderWidth: 1, borderColor: '#FFB3B3', alignItems: 'center', justifyContent: 'center' },
   removeBtnText: { color: '#CC0000', fontSize: 16, fontWeight: 'bold' },
-  addItemBtn: { alignSelf: 'flex-end', marginTop: 10, backgroundColor: '#E5E7EB', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#CCCCCC' } as any,
+  addItemBtn: { alignSelf: 'flex-start', marginTop: 5, backgroundColor: '#E5E7EB', paddingHorizontal: 15, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#CCCCCC' } as any,
   addItemBtnText: { fontSize: 12, fontWeight: 'bold', color: '#333' },
 
   toggleRow: { flexDirection: 'row', gap: 15 } as any,
   toggleBtn: { flex: 1, backgroundColor: '#E5E7EB', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#CCCCCC', alignItems: 'center' } as any,
-  toggleBtnActive: { backgroundColor: '#D1E8D1', borderColor: '#2D8A61' },
+  toggleBtnActiveGreen: { backgroundColor: '#D1E8D1', borderColor: '#2D8A61' },
   toggleText: { fontWeight: 'bold', fontSize: 14, color: '#444' },
-  toggleTextActive: { color: '#2D8A61' },
+  toggleTextActiveGreen: { color: '#2D8A61' },
 
-  rolesContainer: { marginTop: 0 },
+  rolesContainer: { marginTop: 5 },
   roleCard: { flexDirection: 'row', backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: '#CCCCCC', padding: 10, borderRadius: 10, marginBottom: 8, alignItems: 'center' } as any,
-  roleCardActive: { backgroundColor: '#D1E8D1', borderColor: '#2D8A61' },
+  roleCardActiveGreen: { backgroundColor: '#D1E8D1', borderColor: '#2D8A61' },
   roleIconBox: { width: 50, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
   roleIcon: { width: 28, height: 28, marginBottom: 4 },
   roleIconLabel: { fontSize: 10, fontWeight: 'bold', color: '#333', textAlign: 'center' },
@@ -505,7 +548,7 @@ const styles = StyleSheet.create({
   uploadInfo: { flexDirection: 'row', alignItems: 'center', flex: 1, paddingRight: 10 } as any,
   docIcon: { fontSize: 16, marginRight: 8 },
   uploadText: { fontSize: 11, color: '#555', flex: 1 },
-  uploadBtn: { backgroundColor: '#4273B8', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6 },
+  uploadBtnGreen: { backgroundColor: '#2D8A61', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 6 },
   uploadBtnText: { color: '#FFF', fontSize: 11, fontWeight: 'bold' },
 
   checkboxGroup: { flexDirection: 'column', gap: 8 },
@@ -515,117 +558,30 @@ const styles = StyleSheet.create({
   checkmarkSmall: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
   checkboxLabelSmall: { fontSize: 12, color: '#333', flex: 1, lineHeight: 18 },
 
-  submitPledgeBtn: { backgroundColor: '#2D8A61', paddingVertical: 15, borderRadius: 15, alignItems: 'center' },
+  submitPledgeBtn: { backgroundColor: '#2D8A61', paddingVertical: 18, borderRadius: 12, alignItems: 'center' },
   submitBtnText: { color: '#FFFFFF', fontSize: 18, fontWeight: 'bold' },
 
   // =========================================
   // MODAL STYLES
   // =========================================
   modalOverlay: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 9999,
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)', justifyContent: 'center', alignItems: 'center', zIndex: 9999,
   } as any,
-  modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 35,
-    width: '90%',
-    maxWidth: 550,
-    boxShadow: '0px 10px 40px rgba(0,0,0,0.3)',
-  } as any,
-  modalTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#111',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  summaryBox: {
-    backgroundColor: '#F7F7F7',
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 25,
-  },
-  summaryLabel: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#64748B',
-    textTransform: 'uppercase',
-    marginTop: 15,
-    marginBottom: 4,
-  },
-  summaryValue: {
-    fontSize: 16,
-    color: '#0F172A',
-    fontWeight: '500',
-  },
-  checkboxRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 30,
-    paddingHorizontal: 10,
-  } as any,
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: '#2D8A61',
-    borderRadius: 6,
-    marginRight: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  checkboxChecked: {
-    backgroundColor: '#2D8A61',
-  },
-  checkmark: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  checkboxText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#334155',
-    lineHeight: 20,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 15,
-  } as any,
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#E2E8F0',
-    alignItems: 'center',
-  },
-  cancelBtnText: {
-    color: '#475569',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  confirmBtn: {
-    flex: 2,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#2D8A61',
-    alignItems: 'center',
-  },
-  confirmBtnDisabled: {
-    backgroundColor: '#94A3B8',
-  },
-  confirmBtnText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  modalContent: { backgroundColor: '#FFFFFF', borderRadius: 20, padding: 35, width: '90%', maxWidth: 550, boxShadow: '0px 10px 40px rgba(0,0,0,0.3)' } as any,
+  modalTitle: { fontSize: 26, fontWeight: 'bold', color: '#111', marginBottom: 20, textAlign: 'center' },
+  summaryBox: { backgroundColor: '#F7F7F7', borderRadius: 12, padding: 20, borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 25 },
+  summaryLabel: { fontSize: 13, fontWeight: 'bold', color: '#64748B', textTransform: 'uppercase', marginTop: 15, marginBottom: 4 },
+  summaryValue: { fontSize: 16, color: '#0F172A', fontWeight: '500' },
+  checkboxRowModal: { flexDirection: 'row', alignItems: 'center', marginBottom: 30, paddingHorizontal: 10 } as any,
+  checkbox: { width: 24, height: 24, borderWidth: 2, borderColor: '#2D8A61', borderRadius: 6, marginRight: 12, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' },
+  checkboxChecked: { backgroundColor: '#2D8A61' },
+  checkmark: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 14 },
+  checkboxText: { flex: 1, fontSize: 14, color: '#334155', lineHeight: 20 },
+  modalActions: { flexDirection: 'row', justifyContent: 'space-between', gap: 15 } as any,
+  cancelBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#E2E8F0', alignItems: 'center' },
+  cancelBtnText: { color: '#475569', fontSize: 16, fontWeight: 'bold' },
+  confirmBtn: { flex: 2, paddingVertical: 14, borderRadius: 12, backgroundColor: '#2D8A61', alignItems: 'center' },
+  confirmBtnDisabled: { backgroundColor: '#94A3B8' },
+  confirmBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
 });

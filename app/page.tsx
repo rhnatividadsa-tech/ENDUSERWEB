@@ -16,35 +16,41 @@ export default function HomePage() {
       <View style={styles.navBar}>
         {/* Left: Logo & Links */}
         <View style={styles.navLeft}>
-          <Image 
-            source={{ uri: '/logo_b.png' }} 
-            style={styles.logoImage} 
-            resizeMode="contain" 
-          />
+          <Pressable onPress={() => router.push('/')} style={({ hovered }: any) => [{ transition: 'all 0.2s ease' }, hovered && { transform: [{ scale: 1.05 }] }]}>
+            <Image 
+              source={{ uri: '/logo_b.png' }} 
+              style={styles.logoImage} 
+              resizeMode="contain" 
+            />
+          </Pressable>
           
           <View style={styles.navLinks}>
             <Pressable>
-              <Text style={[styles.navLink, styles.activeLink]}>Home</Text>
+              {({ hovered }: any) => (
+                <Text style={[styles.navLink, styles.activeLink, { transition: 'all 0.2s ease' }, hovered && { color: '#4273B8' }]}>Home</Text>
+              )}
             </Pressable>
             <Pressable onPress={() => router.push('/about')}>
-              <Text style={styles.navLink}>About Us</Text>
+              {({ hovered }: any) => (
+                <Text style={[styles.navLink, { transition: 'all 0.2s ease' }, hovered && { color: '#4273B8' }]}>About Us</Text>
+              )}
             </Pressable>
           </View>
         </View>
 
         {/* Right: User Icons */}
         <View style={styles.navRight}>
-          <Pressable style={styles.iconButton}>
+          <Pressable style={({ hovered }: any) => [styles.iconButton, { transition: 'all 0.2s ease' }, hovered && { opacity: 0.6, transform: [{ scale: 1.1 }] }]}>
             <Image source={{ uri: '/icon-bell.png' }} style={styles.navIcon} resizeMode="contain" />
           </Pressable>
           
-          <View style={styles.userProfile}>
+          <Pressable style={({ hovered }: any) => [styles.userProfile, { transition: 'all 0.2s ease' }, hovered && { opacity: 0.7 }]}>
             <Image source={{ uri: '/icon-user.png' }} style={styles.navIcon} resizeMode="contain" />
             <View>
               <Text style={styles.userName}>User</Text>
               <Text style={styles.userRole}>Role</Text>
             </View>
-          </View>
+          </Pressable>
         </View>
       </View>
 
@@ -68,7 +74,9 @@ export default function HomePage() {
         </View>
 
         <View style={styles.cardsContainer}>
-          <View style={styles.card}>
+          
+          {/* PLEDGE CARD (Converted to Pressable for card hover effect) */}
+          <Pressable style={({ hovered }: any) => [styles.card, { transition: 'all 0.3s ease' }, hovered && { transform: [{ translateY: -8 }], boxShadow: '0px 15px 35px rgba(0, 0, 0, 0.25)' }]}>
             <View style={styles.cardTop}>
               <Image source={{ uri: '/icon-box.png' }} style={styles.cardIconImage} resizeMode="contain" />
               <Text style={styles.cardTitle}>Pledge Goods</Text>
@@ -77,14 +85,20 @@ export default function HomePage() {
               </View>
             </View>
             <Pressable 
-  style={[styles.cardButton, { backgroundColor: '#2E8B57' }]}
-  onPress={() => router.push('/pledge')} // <--- ADD THIS LINE
->
-  <Text style={styles.cardButtonText}>Pledge Now</Text>
-</Pressable>
-          </View>
+              style={({ hovered, pressed }: any) => [
+                styles.cardButton, 
+                { backgroundColor: '#2E8B57', transition: 'all 0.2s ease' },
+                hovered && { transform: [{ scale: 1.05 }], boxShadow: '0px 5px 15px rgba(46, 139, 87, 0.4)' },
+                pressed && { transform: [{ scale: 0.95 }] }
+              ]}
+              onPress={() => router.push('/pledge')}
+            >
+              <Text style={styles.cardButtonText}>Pledge Now</Text>
+            </Pressable>
+          </Pressable>
 
-          <View style={styles.card}>
+          {/* VOLUNTEER CARD (Converted to Pressable for card hover effect) */}
+          <Pressable style={({ hovered }: any) => [styles.card, { transition: 'all 0.3s ease' }, hovered && { transform: [{ translateY: -8 }], boxShadow: '0px 15px 35px rgba(0, 0, 0, 0.25)' }]}>
             <View style={styles.cardTop}>
               <Image source={{ uri: '/icon-handshake.png' }} style={styles.cardIconImage} resizeMode="contain" />
               <Text style={styles.cardTitle}>Volunteer Your Time</Text>
@@ -93,12 +107,18 @@ export default function HomePage() {
               </View>
             </View>
             <Pressable 
-              style={[styles.cardButton, { backgroundColor: '#3B71CA' }]}
-              onPress={() => router.push('/volunteer')} // <--- ADD THIS LINE
+              style={({ hovered, pressed }: any) => [
+                styles.cardButton, 
+                { backgroundColor: '#3B71CA', transition: 'all 0.2s ease' },
+                hovered && { transform: [{ scale: 1.05 }], boxShadow: '0px 5px 15px rgba(59, 113, 202, 0.4)' },
+                pressed && { transform: [{ scale: 0.95 }] }
+              ]}
+              onPress={() => router.push('/volunteer')}
               >
               <Text style={styles.cardButtonText}>Volunteer Now</Text>
             </Pressable>
-          </View>
+          </Pressable>
+          
         </View>
       </View>
 
@@ -118,7 +138,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 40, 
-    height: 100,           // Back to original standard height
+    height: 100,           
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
@@ -135,13 +155,13 @@ const styles = StyleSheet.create({
   },
   navLinks: {
     flexDirection: 'row',
-    gap: 40,               // Spread Home and About Us out more
+    gap: 40,               
   } as any,
   navLink: {
-    fontSize: 18,          // Bigger text
+    fontSize: 18,          
     color: '#4B5563',
     fontWeight: '500',
-    letterSpacing: 0.3,    // Subtly utilizes the white space
+    letterSpacing: 0.3,    
   },
   activeLink: {
     color: '#111827',
@@ -150,13 +170,13 @@ const styles = StyleSheet.create({
   navRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 25,               // More space between Icons
+    gap: 25,               
   } as any,
   iconButton: {
     padding: 8,
   },
   navIcon: {
-    width: 34,             // Scaled up slightly to match the 18px font
+    width: 34,             
     height: 34,
     opacity: 0.7, 
   },
@@ -166,7 +186,7 @@ const styles = StyleSheet.create({
     gap: 12,
   } as any,
   userName: {
-    fontSize: 17,          // Bigger user name
+    fontSize: 17,          
     fontWeight: '600',
     color: '#111827',
   },
