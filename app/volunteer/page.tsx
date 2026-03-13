@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Image, ScrollView, TextInput } from 'react-native';
 import { useRouter } from 'next/navigation';
 
@@ -18,7 +18,6 @@ export default function VolunteerPage() {
   const [selectedTime, setSelectedTime] = useState('Select Time Slot');
 
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [isDonor, setIsDonor] = useState<boolean | null>(null);
 
   const [checkboxes, setCheckboxes] = useState({
     background: false,
@@ -26,18 +25,12 @@ export default function VolunteerPage() {
     age: false,
   });
 
-  // --- INLINE ITEMS STATE (For when isDonor === true) ---
-  const [items, setItems] = useState([
-    { qty: '', name: '' }
-  ]);
-
-  const addItem = () => setItems([...items, { qty: '', name: '' }]);
-  const removeItem = (indexToRemove: number) => setItems(items.filter((_, index) => index !== indexToRemove));
-  const updateItem = (index: number, field: 'qty' | 'name', value: string) => {
-    const newItems = [...items];
-    newItems[index][field] = value;
-    setItems(newItems);
-  };
+  // --- AUTO-CHECK LOGIC FOR FIELD ROLE ---
+  useEffect(() => {
+    if (selectedRole === 'field') {
+      setCheckboxes(prev => ({ ...prev, documents: true }));
+    }
+  }, [selectedRole]);
 
   // --- FORM STATES (Step 3: Questionnaire) ---
   const [qDisaster, setQDisaster] = useState<boolean | null>(null);
@@ -78,14 +71,10 @@ export default function VolunteerPage() {
   const isSiteValid = selectedSite !== 'Select Site Location';
   const isTimeValid = selectedTime !== 'Select Time Slot';
   const isRoleValid = selectedRole !== null;
-  const isDonorValid = isDonor !== null;
   const isCheckboxesValid = checkboxes.background && checkboxes.documents && checkboxes.age;
   
-  const validItems = items.filter(item => item.qty.trim() !== '' && item.name.trim() !== '');
-  const isItemsValid = isDonor === true ? validItems.length > 0 : true;
-
   const handleNextToStep3 = () => {
-    if (isSiteValid && isTimeValid && isRoleValid && isDonorValid && isCheckboxesValid && isItemsValid) {
+    if (isSiteValid && isTimeValid && isRoleValid && isCheckboxesValid) {
       setShowErrors(false);
       setStep(3);
     } else {
@@ -222,7 +211,7 @@ export default function VolunteerPage() {
             )}
 
             {/* ========================================================= */}
-            {/* STEP 2: REGISTRATION FORM                                   */}
+            {/* STEP 2: REGISTRATION FORM                                 */}
             {/* ========================================================= */}
             {step === 2 && (
               <View style={styles.mainGridStep2}>
@@ -336,20 +325,12 @@ export default function VolunteerPage() {
                         </View>
                       )}
                       {selectedRole === 'field' && (
-                        <>
-                          <View style={styles.uploadRow}>
-                            <View style={styles.uploadInfo}><Text style={styles.docIcon}>📄</Text><Text style={styles.uploadText}>Upload Photo ID (For badge Creation)</Text></View>
-                            <Pressable style={(state: any) => [styles.uploadBtn, styles.animated, state.hovered && {backgroundColor: '#335C94'}, state.pressed && styles.btnPress]}>
-                              <Text style={styles.uploadBtnText}>Upload</Text>
-                            </Pressable>
+                        <View style={[styles.uploadRow, { borderStyle: 'solid', borderColor: '#38A169', backgroundColor: '#F0FDF4' }]}>
+                          <View style={styles.uploadInfo}>
+                            <Text style={styles.docIcon}>✅</Text>
+                            <Text style={[styles.uploadText, { color: '#2D8A61', fontWeight: 'bold' }]}>No additional documents required for Field role.</Text>
                           </View>
-                          <View style={styles.uploadRow}>
-                            <View style={styles.uploadInfo}><Text style={styles.docIcon}>📄</Text><Text style={styles.uploadText}>Upload Background Check Auth.</Text></View>
-                            <Pressable style={(state: any) => [styles.uploadBtn, styles.animated, state.hovered && {backgroundColor: '#335C94'}, state.pressed && styles.btnPress]}>
-                              <Text style={styles.uploadBtnText}>Upload</Text>
-                            </Pressable>
-                          </View>
-                        </>
+                        </View>
                       )}
                     </View>
                   </ScrollView>
@@ -388,7 +369,7 @@ export default function VolunteerPage() {
                     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 25 }} showsVerticalScrollIndicator={false}>
                       
                       <View style={styles.donorHeaderRow}>
-                        <Text style={[styles.cardTitle, { marginBottom: 0 }]}>Donor and Capacity Checker</Text>
+                        <Text style={[styles.cardTitle, { marginBottom: 0 }]}>Capacity Checker</Text>
                         
                         <View style={styles.statusLegendBox}>
                           <Text style={styles.legendTitle}>Statuses:</Text>
@@ -398,76 +379,11 @@ export default function VolunteerPage() {
                         </View>
                       </View>
 
-                      <View style={styles.donorQuestions}>
-                        <View style={styles.donorToggleRow}>
-                          <Text style={styles.donorLabel}>Are You a Donor?</Text>
-                          <View style={[styles.pillToggle, showErrors && isDonor === null && styles.errorBorder]}>
-                            <Pressable 
-                              style={(state: any) => [styles.pillOption, styles.animated, isDonor === true && styles.pillOptionActive, state.hovered && isDonor !== true && { backgroundColor: '#D1D5DB' }]} 
-                              onPress={() => setIsDonor(true)}
-                            >
-                              <Text style={[styles.pillText, isDonor === true && styles.pillTextActive]}>YES</Text>
-                            </Pressable>
-                            <Pressable 
-                              style={(state: any) => [styles.pillOption, styles.animated, isDonor === false && styles.pillOptionActive, state.hovered && isDonor !== false && { backgroundColor: '#D1D5DB' }]} 
-                              onPress={() => setIsDonor(false)}
-                            >
-                              <Text style={[styles.pillText, isDonor === false && styles.pillTextActive]}>NO</Text>
-                            </Pressable>
-                          </View>
-                        </View>
-
-                        {isDonor === true && (
-                          <View style={{ marginBottom: 20 }}>
-                            <Text style={[styles.fieldLabel, { fontSize: 13, marginBottom: 8, color: '#4273B8' }]}>Input Donation Details:</Text>
-                            <View style={styles.itemsOuterFrame}>
-                              <View>
-                                {items.map((item, index) => {
-                                  const showInputError = showErrors && isDonor && !isItemsValid && item.qty === '' && item.name === '';
-                                  return (
-                                    <View key={index} style={styles.itemRow}>
-                                      <TextInput 
-                                        style={[styles.qtyBox, styles.animated, showInputError && styles.errorBorder]} 
-                                        value={item.qty} 
-                                        onChangeText={(text) => updateItem(index, 'qty', text)}
-                                        placeholder="Qty"
-                                        placeholderTextColor="#999"
-                                        keyboardType="numeric"
-                                      />
-                                      <TextInput 
-                                        style={[styles.nameBox, styles.animated, showInputError && styles.errorBorder]} 
-                                        value={item.name} 
-                                        onChangeText={(text) => updateItem(index, 'name', text)}
-                                        placeholder='"Item Name"'
-                                        placeholderTextColor="#999"
-                                      />
-                                      <Pressable 
-                                        style={(state: any) => [styles.removeBtn, styles.animated, state.hovered && { backgroundColor: '#FFCaca' }, state.pressed && styles.btnPress]} 
-                                        onPress={() => removeItem(index)}
-                                      >
-                                        <Text style={styles.removeBtnText}>✕</Text>
-                                      </Pressable>
-                                    </View>
-                                  );
-                                })}
-                              </View>
-                              <Pressable 
-                                style={(state: any) => [styles.addItemBtn, styles.animated, state.hovered && { backgroundColor: '#D1D5DB' }, state.pressed && styles.btnPress]} 
-                                onPress={addItem}
-                              >
-                                <Text style={styles.addItemBtnText}>+ ADD</Text>
-                              </Pressable>
-                            </View>
-                            {showErrors && isDonor && !isItemsValid && <Text style={[styles.errorText, {marginTop: 4}]}>● Please add donation items.</Text>}
-                          </View>
-                        )}
-
-                        <View style={styles.capacityRow}>
-                          <Text style={styles.donorLabel}>Real-Time Capacity:</Text>
-                          <View style={styles.siteBadge}><Text style={styles.siteBadgeText}>{selectedSite !== 'Select Site Location' ? selectedSite : 'Site A: Frassati Building'}</Text></View>
-                          <Text style={{marginHorizontal: 8}}>-</Text>
-                          <View style={[styles.badge, styles.badgeModerate]}><Text style={styles.badgeText}>Moderate</Text></View>
-                        </View>
+                      <View style={styles.capacityRow}>
+                        <Text style={styles.donorLabel}>Real-Time Capacity:</Text>
+                        <View style={styles.siteBadge}><Text style={styles.siteBadgeText}>{selectedSite !== 'Select Site Location' ? selectedSite : ''}</Text></View>
+                        <Text style={{marginHorizontal: 8}}>-</Text>
+                        <View style={[styles.badge, styles.badgeModerate]}><Text style={styles.badgeText}>Moderate</Text></View>
                       </View>
 
                       {/* Checkboxes */}
@@ -490,7 +406,9 @@ export default function VolunteerPage() {
                               <View style={[styles.checkboxSquare, styles.animated, checkboxes.documents && styles.checkboxSquareActive, showErrors && !checkboxes.documents && styles.errorBorder, hovered && !checkboxes.documents && { borderColor: '#4273B8' }]}>
                                 {checkboxes.documents && <Text style={styles.checkmark}>✓</Text>}
                               </View>
-                              <Text style={[styles.checkboxLabel, styles.animated, showErrors && !checkboxes.documents && {color: '#E53E3E'}, hovered && !checkboxes.documents && { color: '#4273B8' }]}>I have uploaded all required documents for my selected role.</Text>
+                              <Text style={[styles.checkboxLabel, styles.animated, showErrors && !checkboxes.documents && {color: '#E53E3E'}, hovered && !checkboxes.documents && { color: '#4273B8' }]}>
+                                {selectedRole === 'field' ? 'I acknowledge the requirements for my selected role.' : 'I have uploaded all required documents for my selected role.'}
+                              </Text>
                             </View>
                           )}
                         </Pressable>
@@ -507,7 +425,7 @@ export default function VolunteerPage() {
                         </Pressable>
                       </View>
                       
-                      {showErrors && (!isSiteValid || !isTimeValid || !isRoleValid || isDonor === null || !isCheckboxesValid || (!isItemsValid && isDonor)) && (
+                      {showErrors && (!isSiteValid || !isTimeValid || !isRoleValid || !isCheckboxesValid) && (
                         <Text style={[styles.errorText, {marginTop: 10}]}>● Please address all required fields highlighted in red.</Text>
                       )}
 
@@ -720,7 +638,7 @@ export default function VolunteerPage() {
             )}
 
             {/* ========================================================= */}
-            {/* STEP 4: SUCCESS CONFIRMATION                                */}
+            {/* STEP 4: SUCCESS CONFIRMATION                              */}
             {/* ========================================================= */}
             {step === 4 && (
               <View style={styles.step4Container}>
@@ -749,11 +667,15 @@ export default function VolunteerPage() {
                   </View>
                   
                   <View style={styles.successBody}>
-                    <Image source={{ uri: '/hero_icon.png' }} style={styles.successIcon} resizeMode="contain" />
+                    
+                    {/* NEW STYLED CHECKMARK ICON */}
+                    <View style={styles.checkmarkIconCircle}>
+                      <Text style={styles.checkmarkIconText}>✓</Text>
+                    </View>
                     
                     <Text style={styles.thankYouTitle}>Thank You, Hero!</Text>
                     <Text style={styles.successDescText}>
-                      Your Volunteer Application and Pledge have been successfully routed to our Admin Team for final processing and document verification....
+                      Your Volunteer Application has been successfully routed to our Admin Team for final processing and document verification.
                     </Text>
 
                     {/* VISUAL PIPELINE TRACKER */}
@@ -795,19 +717,33 @@ export default function VolunteerPage() {
                     </Text>
                     
                     <Text style={styles.successDetailText}>
-                      Your status is currently: <Text style={{fontWeight: 'bold'}}>[Pledge/Document Processing]</Text>
+                      Your status is currently: <Text style={{fontWeight: 'bold'}}>[Document Processing]</Text>
                     </Text>
                     
                     <Text style={styles.successDetailText}>
-                      <Text style={{fontWeight: 'bold'}}>Summary:</Text> {selectedRole ? selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1) : ''} Role ({selectedTime}){isDonor && items[0].qty !== '' ? `, ${items[0].qty} ${items[0].name} Pledge...` : ''}
+                      <Text style={{fontWeight: 'bold'}}>Summary:</Text> {selectedRole ? selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1) : ''} Role ({selectedTime})
                     </Text>
 
-                    <Pressable 
-                      style={(state: any) => [styles.returnHomeBtn, styles.animated, state.hovered && styles.btnHover, state.pressed && styles.btnPress]} 
-                      onPress={() => router.push('/')}
-                    >
-                      <Text style={styles.returnHomeBtnText}>Return to Home Page</Text>
-                    </Pressable>
+                    {/* NEW CROSS-SELL DONOR PROMPT */}
+                    <View style={{ marginTop: 40, width: '100%', alignItems: 'center', borderTopWidth: 1, borderColor: '#EEE', paddingTop: 30 }}>
+                      <Text style={styles.donorPromptText}>Do you want to be a Donor?</Text>
+                      
+                      <View style={{ flexDirection: 'row', gap: 15, marginTop: 20 }}>
+                        <Pressable 
+                          style={(state: any) => [styles.yesDonorBtn, styles.animated, state.hovered && styles.btnHover, state.pressed && styles.btnPress]} 
+                          onPress={() => router.push('/pledge')}
+                        >
+                          <Text style={styles.yesDonorBtnText}>Yes, I want to be a donor</Text>
+                        </Pressable>
+                        
+                        <Pressable 
+                          style={(state: any) => [styles.noDonorBtn, styles.animated, state.hovered && { backgroundColor: '#F3F4F6' }, state.pressed && styles.btnPress]} 
+                          onPress={() => router.push('/')}
+                        >
+                          <Text style={styles.noDonorBtnText}>No, Return to Homepage</Text>
+                        </Pressable>
+                      </View>
+                    </View>
 
                   </View>
                 </View>
@@ -917,6 +853,8 @@ const styles = StyleSheet.create({
   uploadBtn: { backgroundColor: '#4273B8', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 6 },
   uploadBtnText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
 
+  donorHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 } as any,
+  
   statusLegendBox: { position: 'absolute', top: 30, right: 30, zIndex: 10, flexDirection: 'column', gap: 10 } as any,
   legendTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 5 },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: 12 } as any,
@@ -928,28 +866,9 @@ const styles = StyleSheet.create({
   badgeClosed: { backgroundColor: '#A0AEC0' },
   badgeText: { color: '#FFF', fontSize: 12, fontWeight: 'bold', letterSpacing: 0.5 },
 
-  donorHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 } as any,
-  donorQuestions: { marginBottom: 10 },
-  donorToggleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 } as any,
-  donorLabel: { fontSize: 16, fontWeight: 'bold', color: '#111', width: 180 },
-  
-  pillToggle: { flexDirection: 'row', gap: 10 } as any,
-  pillOption: { paddingVertical: 6, paddingHorizontal: 20, backgroundColor: '#E5E7EB', borderRadius: 20, borderWidth: 1, borderColor: '#D1D5DB' },
-  pillOptionActive: { backgroundColor: '#4273B8', borderColor: '#4273B8' },
-  pillText: { fontSize: 12, fontWeight: 'bold', color: '#4B5563' },
-  pillTextActive: { color: '#FFFFFF' },
-
-  itemsOuterFrame: { borderWidth: 1, borderColor: '#CCCCCC', borderRadius: 8, padding: 12, backgroundColor: '#FAFAFA', maxWidth: 380 },
-  itemRow: { flexDirection: 'row', gap: 8, marginBottom: 8, alignItems: 'center' } as any,
-  qtyBox: { width: 50, backgroundColor: '#E5E7EB', paddingVertical: 8, paddingHorizontal: 8, borderRadius: 6, borderWidth: 1, borderColor: '#CCCCCC', textAlign: 'center', fontSize: 12, color: '#000' } as any,
-  nameBox: { flex: 1, backgroundColor: '#E5E7EB', paddingVertical: 8, paddingHorizontal: 8, borderRadius: 6, borderWidth: 1, borderColor: '#CCCCCC', fontSize: 12, color: '#000' } as any,
-  removeBtn: { width: 28, height: 28, backgroundColor: '#FFEDED', borderRadius: 6, borderWidth: 1, borderColor: '#FFB3B3', alignItems: 'center', justifyContent: 'center' },
-  removeBtnText: { color: '#CC0000', fontSize: 12, fontWeight: 'bold' },
-  addItemBtn: { alignSelf: 'flex-start', marginTop: 5, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#E5E7EB', borderRadius: 6, borderWidth: 1, borderColor: '#CCC' } as any,
-  addItemBtnText: { fontSize: 11, fontWeight: 'bold', color: '#333' },
-
-  capacityRow: { flexDirection: 'row', alignItems: 'center' } as any,
-  siteBadge: { backgroundColor: '#D9D9D9', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 },
+  capacityRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, marginTop: 15 } as any,
+  donorLabel: { fontSize: 16, fontWeight: 'bold', color: '#111' },
+  siteBadge: { backgroundColor: '#D9D9D9', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, marginLeft: 15 },
   siteBadgeText: { fontSize: 12, color: '#333', fontWeight: 'bold' },
 
   checkboxGroup: { flexDirection: 'column', gap: 10 } as any,
@@ -964,7 +883,6 @@ const styles = StyleSheet.create({
   nextStepSub: { fontSize: 13, color: '#666' },
   nextStepIcon: { backgroundColor: '#3FA9F5', width: 40, height: 40, borderRadius: 6, alignItems: 'center', justifyContent: 'center' },
 
-
   // ==========================================
   // STEP 3 STYLES 
   // ==========================================
@@ -973,6 +891,12 @@ const styles = StyleSheet.create({
   qQuestionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 } as any,
   qQuestionText: { fontSize: 13, color: '#111', flex: 1, paddingRight: 20, lineHeight: 20 },
   
+  pillToggle: { flexDirection: 'row', gap: 10 } as any,
+  pillOption: { paddingVertical: 6, paddingHorizontal: 20, backgroundColor: '#E5E7EB', borderRadius: 20, borderWidth: 1, borderColor: '#D1D5DB' },
+  pillOptionActive: { backgroundColor: '#4273B8', borderColor: '#4273B8' },
+  pillText: { fontSize: 12, fontWeight: 'bold', color: '#4B5563' },
+  pillTextActive: { color: '#FFFFFF' },
+
   healthBannerClean: { backgroundColor: '#E3F2E3', paddingVertical: 25, paddingHorizontal: 20, borderRadius: 12, marginTop: 10, marginBottom: 10 },
   healthDesc: { fontSize: 12, color: '#22543D', marginBottom: 20, fontStyle: 'italic' },
   
@@ -1003,7 +927,27 @@ const styles = StyleSheet.create({
   successHeaderText: { color: '#FFFFFF', fontSize: 24, fontWeight: 'bold' },
   
   successBody: { padding: 40, alignItems: 'center', flexDirection: 'column' } as any,
-  successIcon: { width: 90, height: 90, marginBottom: 20 },
+
+  // NEW STYLED CHECKMARK ICON
+  checkmarkIconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 3,
+    borderColor: '#2D8A61',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    boxShadow: '0px 2px 10px rgba(0,0,0,0.05)'
+  } as any,
+  checkmarkIconText: {
+    color: '#2D8A61',
+    fontSize: 40,
+    fontWeight: 'bold',
+    marginTop: -3,
+  },
+
   thankYouTitle: { fontSize: 26, fontWeight: 'bold', color: '#111', marginBottom: 15 },
   successDescText: { fontSize: 14, color: '#444', textAlign: 'center', lineHeight: 22, maxWidth: 650, marginBottom: 30 },
 
@@ -1016,7 +960,11 @@ const styles = StyleSheet.create({
 
   successDetailText: { fontSize: 14, color: '#333', textAlign: 'center', marginBottom: 8, lineHeight: 20 },
   
-  returnHomeBtn: { backgroundColor: '#4273B8', paddingVertical: 14, paddingHorizontal: 40, borderRadius: 8, marginTop: 25 },
-  returnHomeBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+  // NEW DONOR PROMPT STYLES
+  donorPromptText: { fontSize: 20, fontWeight: 'bold', color: '#111', textAlign: 'center' },
+  yesDonorBtn: { backgroundColor: '#2D8A61', paddingVertical: 14, paddingHorizontal: 30, borderRadius: 12, alignItems: 'center' },
+  yesDonorBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: 'bold' },
+  noDonorBtn: { backgroundColor: '#FFFFFF', paddingVertical: 14, paddingHorizontal: 30, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#CCC' },
+  noDonorBtnText: { color: '#444', fontSize: 16, fontWeight: 'bold' },
 
 });
