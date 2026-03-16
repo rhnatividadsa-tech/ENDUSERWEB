@@ -8,7 +8,7 @@ export default function HomePage() {
   const router = useRouter();
   
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
+    <View style={styles.container}>
       
       {/* ========================================= */}
       {/* NAVIGATION BAR                            */}
@@ -16,12 +16,16 @@ export default function HomePage() {
       <View style={styles.navBar}>
         {/* Left: Logo & Links */}
         <View style={styles.navLeft}>
-          <Pressable onPress={() => router.push('/')} style={({ hovered }: any) => [{ transition: 'all 0.2s ease' }, hovered && { transform: [{ scale: 1.05 }] }]}>
+          <Pressable 
+            onPress={() => router.push('/')} 
+            style={({ hovered }: any) => [styles.logoContainer, { transition: 'all 0.2s ease' }, hovered && { transform: [{ scale: 1.02 }] }]}
+          >
             <Image 
               source={{ uri: '/logo_b.png' }} 
               style={styles.logoImage} 
               resizeMode="contain" 
             />
+            <Text style={styles.brandName}>BayaniHub</Text>
           </Pressable>
           
           <View style={styles.navLinks}>
@@ -55,150 +59,129 @@ export default function HomePage() {
       </View>
 
       {/* ========================================= */}
-      {/* HERO SECTION                              */}
+      {/* PAGE BODY (Scrollable area below navbar)  */}
       {/* ========================================= */}
-      <View style={styles.heroSection}>
-        <Image source={{ uri: '/hero-bg.png' }} style={styles.heroBg} resizeMode="cover" />
-        <View style={styles.heroOverlay} />
+      <ScrollView 
+        style={styles.pageBody} 
+        contentContainerStyle={styles.scrollContent} 
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.heroSection}>
+          <Image source={{ uri: '/hero-bg.png' }} style={styles.heroBg} resizeMode="cover" />
+          <View style={styles.heroOverlay} />
 
-        <View style={styles.heroContent}>
-          <Text style={styles.welcomeText}>
-            Welcome To <Text style={styles.brandText}>BayaniHub</Text>
-          </Text>
-          <Text style={styles.headlineText}>
-            Right People. Right Resources. Right Now.
-          </Text>
-          <Text style={styles.subHeadlineText}>
-            BayaniHub is a unified platform managing both volunteers and material aid. We empower modern-day heroes to forecast needs and deploy relief efficiently.
-          </Text>
-        </View>
+          <View style={styles.heroContent}>
+            <Text style={styles.welcomeText}>
+              Welcome To <Text style={styles.brandText}>BayaniHub</Text>
+            </Text>
+            <Text style={styles.headlineText}>
+              Right People. Right Resources. Right Now.
+            </Text>
+            <Text style={styles.subHeadlineText}>
+              BayaniHub is a unified platform managing both volunteers and material aid. We empower modern-day heroes to forecast needs and deploy relief efficiently.
+            </Text>
+          </View>
 
-        <View style={styles.cardsContainer}>
-          
-          {/* PLEDGE CARD (Converted to Pressable for card hover effect) */}
-          <Pressable style={({ hovered }: any) => [styles.card, { transition: 'all 0.3s ease' }, hovered && { transform: [{ translateY: -8 }], boxShadow: '0px 15px 35px rgba(0, 0, 0, 0.25)' }]}>
-            <View style={styles.cardTop}>
-              <Image source={{ uri: '/icon-box.png' }} style={styles.cardIconImage} resizeMode="contain" />
-              <Text style={styles.cardTitle}>Pledge Goods</Text>
-              <View style={styles.subtitleWrapper}>
-                <Text style={styles.cardSubtitle}>Review dynamic site needs. Donate supplies.</Text>
+          <View style={styles.cardsContainer}>
+            
+            {/* PLEDGE CARD */}
+            <Pressable style={({ hovered }: any) => [styles.card, { transition: 'all 0.3s ease' }, hovered && { transform: [{ translateY: -8 }], boxShadow: '0px 15px 35px rgba(0, 0, 0, 0.25)' }]}>
+              <View style={styles.cardTop}>
+                <Image source={{ uri: '/icon-box.png' }} style={styles.cardIconImage} resizeMode="contain" />
+                <Text style={styles.cardTitle}>Pledge Goods</Text>
+                <View style={styles.subtitleWrapper}>
+                  <Text style={styles.cardSubtitle}>Review dynamic site needs. Donate supplies.</Text>
+                </View>
               </View>
-            </View>
-            <Pressable 
-              style={({ hovered, pressed }: any) => [
-                styles.cardButton, 
-                { backgroundColor: '#2E8B57', transition: 'all 0.2s ease' },
-                hovered && { transform: [{ scale: 1.05 }], boxShadow: '0px 5px 15px rgba(46, 139, 87, 0.4)' },
-                pressed && { transform: [{ scale: 0.95 }] }
-              ]}
-              onPress={() => router.push('/pledge')}
-            >
-              <Text style={styles.cardButtonText}>Pledge Now</Text>
-            </Pressable>
-          </Pressable>
-
-          {/* VOLUNTEER CARD (Converted to Pressable for card hover effect) */}
-          <Pressable style={({ hovered }: any) => [styles.card, { transition: 'all 0.3s ease' }, hovered && { transform: [{ translateY: -8 }], boxShadow: '0px 15px 35px rgba(0, 0, 0, 0.25)' }]}>
-            <View style={styles.cardTop}>
-              <Image source={{ uri: '/icon-handshake.png' }} style={styles.cardIconImage} resizeMode="contain" />
-              <Text style={styles.cardTitle}>Volunteer Your Time</Text>
-              <View style={styles.subtitleWrapper}>
-                <Text style={styles.cardSubtitle}>Discover Medic, Logistics, & Field roles.</Text>
-              </View>
-            </View>
-            <Pressable 
-              style={({ hovered, pressed }: any) => [
-                styles.cardButton, 
-                { backgroundColor: '#3B71CA', transition: 'all 0.2s ease' },
-                hovered && { transform: [{ scale: 1.05 }], boxShadow: '0px 5px 15px rgba(59, 113, 202, 0.4)' },
-                pressed && { transform: [{ scale: 0.95 }] }
-              ]}
-              onPress={() => router.push('/volunteer')}
+              <Pressable 
+                style={({ hovered, pressed }: any) => [
+                  styles.cardButton, 
+                  { backgroundColor: '#2E8B57', transition: 'all 0.2s ease' },
+                  hovered && { transform: [{ scale: 1.05 }], boxShadow: '0px 5px 15px rgba(46, 139, 87, 0.4)' },
+                  pressed && { transform: [{ scale: 0.95 }] }
+                ]}
+                onPress={() => router.push('/pledge')}
               >
-              <Text style={styles.cardButtonText}>Volunteer Now</Text>
+                <Text style={styles.cardButtonText}>Pledge Now</Text>
+              </Pressable>
             </Pressable>
-          </Pressable>
-          
-        </View>
-      </View>
 
-    </ScrollView>
+            {/* VOLUNTEER CARD */}
+            <Pressable style={({ hovered }: any) => [styles.card, { transition: 'all 0.3s ease' }, hovered && { transform: [{ translateY: -8 }], boxShadow: '0px 15px 35px rgba(0, 0, 0, 0.25)' }]}>
+              <View style={styles.cardTop}>
+                <Image source={{ uri: '/icon-handshake.png' }} style={styles.cardIconImage} resizeMode="contain" />
+                <Text style={styles.cardTitle}>Volunteer Your Time</Text>
+                <View style={styles.subtitleWrapper}>
+                  <Text style={styles.cardSubtitle}>Discover Medic, Logistics, & Field roles.</Text>
+                </View>
+              </View>
+              <Pressable 
+                style={({ hovered, pressed }: any) => [
+                  styles.cardButton, 
+                  { backgroundColor: '#3B71CA', transition: 'all 0.2s ease' },
+                  hovered && { transform: [{ scale: 1.05 }], boxShadow: '0px 5px 15px rgba(59, 113, 202, 0.4)' },
+                  pressed && { transform: [{ scale: 0.95 }] }
+                ]}
+                onPress={() => router.push('/volunteer')}
+                >
+                <Text style={styles.cardButtonText}>Volunteer Now</Text>
+              </Pressable>
+            </Pressable>
+            
+          </View>
+        </View>
+      </ScrollView>
+
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
+  // EXACT MATCH TO VOLUNTEER PAGE
+  container: { 
+    flex: 1, 
+    backgroundColor: '#F9FAFB', 
+    height: '100vh', 
+    overflow: 'hidden' 
+  } as any,
 
-  // --- NAVIGATION BAR ---
-  navBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  // --- NAVIGATION BAR (EXACT MATCH) ---
+  navBar: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'space-between', 
     paddingHorizontal: 40, 
-    height: 100,           
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    zIndex: 10,
+    height: 90, 
+    backgroundColor: '#FFFFFF', 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#E5E7EB', 
+    zIndex: 10 
   } as any,
-  navLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 40,               
-  } as any,
-  logoImage: {
-    width: 65,
-    height: 65,
-  },
-  navLinks: {
-    flexDirection: 'row',
-    gap: 40,               
-  } as any,
-  navLink: {
-    fontSize: 18,          
-    color: '#4B5563',
-    fontWeight: '500',
-    letterSpacing: 0.3,    
-  },
-  activeLink: {
-    color: '#111827',
-    fontWeight: '600',
-  },
-  navRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 25,               
-  } as any,
-  iconButton: {
-    padding: 8,
-  },
-  navIcon: {
-    width: 34,             
-    height: 34,
-    opacity: 0.7, 
-  },
-  userProfile: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  } as any,
-  userName: {
-    fontSize: 17,          
-    fontWeight: '600',
-    color: '#111827',
-  },
-  userRole: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
+  navLeft: { flexDirection: 'row', alignItems: 'center', gap: 40 } as any,
+  logoContainer: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  logoImage: { width: 45, height: 45 },
+  brandName: { fontSize: 24, fontWeight: '400', color: '#111827', letterSpacing: -0.5 },
+  navLinks: { flexDirection: 'row', gap: 40 } as any,
+  navLink: { fontSize: 16, color: '#4B5563', fontWeight: '600' },
+  activeLink: { color: '#4273B8' },
+  navRight: { flexDirection: 'row', alignItems: 'center', gap: 25 } as any,
+  iconButton: { padding: 8 },
+  navIcon: { width: 28, height: 28, opacity: 0.7 },
+  userProfile: { flexDirection: 'row', alignItems: 'center', gap: 12 } as any,
+  userName: { fontSize: 15, fontWeight: '600', color: '#111827' },
+  userRole: { fontSize: 12, color: '#6B7280' },
 
-  // --- HERO SECTION (Keeping your alignment fixes) ---
+  // --- PAGE BODY (EXACT MATCH) ---
+  pageBody: { flex: 1, backgroundColor: '#F9FAFB' } as any,
+  // Note: I removed the 40px padding here so the Hero image can touch the edges, 
+  // but it maintains the exact same ScrollView behavior as the Volunteer page.
+  scrollContent: { flexGrow: 1 },
+
+  // --- HERO SECTION ---
   heroSection: {
     position: 'relative',
-    minHeight: 'calc(100vh - 100px)',
+    minHeight: '100%', // Fills the available ScrollView space
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 60,
@@ -245,7 +228,7 @@ const styles = StyleSheet.create({
     maxWidth: 750,
   },
 
-  // --- CARDS SECTION (Keeping your alignment fixes) ---
+  // --- CARDS SECTION ---
   cardsContainer: {
     flexDirection: 'row',
     gap: 30,
