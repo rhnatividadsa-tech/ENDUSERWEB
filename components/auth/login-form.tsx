@@ -26,6 +26,7 @@ export function LoginForm() {
   const [errors, setErrors] = useState<Partial<Record<"email" | "password", string>>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const validate = () => {
     const nextErrors: typeof errors = {};
@@ -58,21 +59,25 @@ export function LoginForm() {
 
     try {
       await login(form.email.trim(), form.password);
-      router.push("/");
+      setIsSuccess(true);
+      window.setTimeout(() => {
+        router.push("/dashboard");
+      }, 650);
     } catch (error) {
       setServerError(error instanceof Error ? error.message : "Unable to log in.");
+      setIsSuccess(false);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <main className={styles.page}>
-      <div className={styles.background} aria-hidden="true" />
+    <main className={`${styles.page} ${isSuccess ? styles.pageSuccess : ""}`}>
+      <div className={`${styles.background} ${isSuccess ? styles.backgroundSuccess : ""}`} aria-hidden="true" />
 
       <section className={styles.shell}>
-        <div className={styles.logoRing} aria-hidden="true" />
-        <div className={styles.logoInner} aria-hidden="true">
+        <div className={`${styles.logoRing} ${isSuccess ? styles.logoSuccess : ""}`} aria-hidden="true" />
+        <div className={`${styles.logoInner} ${isSuccess ? styles.logoSuccess : ""}`} aria-hidden="true">
           <Image
             src="/logos/logo.png"
             alt="BayaniHub logo"
@@ -83,7 +88,10 @@ export function LoginForm() {
           />
         </div>
 
-        <div className={styles.card}>
+        <div className={`${styles.card} ${isSuccess ? styles.cardSuccess : ""}`}>
+          <Link href="/" className={styles.backLink}>
+            ← Back to home
+          </Link>
           <header className={styles.header}>
             <p className={styles.welcome}>Welcome to</p>
             <h1 className={styles.brand}>BayaniHub</h1>
@@ -96,13 +104,24 @@ export function LoginForm() {
             </div>
           ) : null}
 
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          {isSuccess ? (
+            <div className={styles.successState} role="status" aria-live="polite">
+              <span className={styles.successCheck} aria-hidden="true">
+                ✓
+              </span>
+              <p className={styles.successTitle}>Login successful</p>
+              <p className={styles.successSubtitle}>Redirecting to homepage...</p>
+            </div>
+          ) : null}
+
+          <form className={`${styles.form} ${isSuccess ? styles.formSuccess : ""}`} onSubmit={handleSubmit} noValidate>
             <div className={styles.field}>
               <input
                 className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
                 type="email"
                 placeholder="Email"
                 value={form.email}
+                disabled={isLoading || isSuccess}
                 onChange={(event) => {
                   setForm((current) => ({ ...current, email: event.target.value }));
                   if (errors.email) {
@@ -127,6 +146,7 @@ export function LoginForm() {
                   type={form.showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={form.password}
+                  disabled={isLoading || isSuccess}
                   onChange={(event) => {
                     setForm((current) => ({ ...current, password: event.target.value }));
                     if (errors.password) {
@@ -138,6 +158,7 @@ export function LoginForm() {
                 <button
                   className={styles.toggle}
                   type="button"
+                  disabled={isLoading || isSuccess}
                   onClick={() =>
                     setForm((current) => ({
                       ...current,
@@ -168,19 +189,20 @@ export function LoginForm() {
                   type="checkbox"
                   className={styles.checkbox}
                   checked={form.rememberMe}
+                  disabled={isLoading || isSuccess}
                   onChange={(event) =>
                     setForm((current) => ({ ...current, rememberMe: event.target.checked }))
                   }
                 />
                 <span className={styles.rememberLabel}>Remember me</span>
               </label>
-              <Link className={styles.forgot} href="/forgot-password">
+              <Link className={`${styles.forgot} ${isLoading || isSuccess ? styles.linkDisabled : ""}`} href="/forgot-password" aria-disabled={isLoading || isSuccess}>
                 Forgot Password?
               </Link>
             </div>
 
-            <button className={styles.submit} type="submit" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
+            <button className={styles.submit} type="submit" disabled={isLoading || isSuccess}>
+              {isSuccess ? "Success" : isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
 
@@ -194,7 +216,7 @@ export function LoginForm() {
           </div>
 
           <p className={styles.footer}>
-            Don&apos;t have an account? <Link href="/signup">Sign Up</Link>
+            Don&apos;t have an account? <Link className={isLoading || isSuccess ? styles.linkDisabled : ""} href="/signup" aria-disabled={isLoading || isSuccess}>Sign Up</Link>
           </p>
         </div>
       </section>

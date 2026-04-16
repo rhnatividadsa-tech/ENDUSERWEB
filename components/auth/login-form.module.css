@@ -18,6 +18,7 @@
   background-position: center;
   filter: blur(3px);
   transform: scale(1.04);
+  transition: transform 650ms ease, filter 650ms ease;
 }
 
 .shell {
@@ -37,6 +38,7 @@
   border-radius: 32px;
   background: #5E70DC;
   z-index: 3;
+  transition: transform 650ms ease, opacity 650ms ease;
 }
 
 .logoInner {
@@ -52,6 +54,7 @@
   place-items: center;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
   z-index: 4;
+  transition: transform 650ms ease, opacity 650ms ease;
 }
 
 .logoMark {
@@ -75,6 +78,7 @@
   padding: 86px 60px 40px;
   position: relative;
   z-index: 1;
+  transition: transform 650ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 650ms ease, box-shadow 300ms ease;
 }
 
 .header {
@@ -102,6 +106,28 @@
   margin: 4px 0 0;
   font-size: 24px;
   font-weight: 600;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #3B53C1;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 10px 20px rgba(59, 83, 193, 0.18);
+  transition: transform 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
+}
+
+.backLink:hover {
+  transform: translateY(-1px);
+  background: #3042aa;
 }
 
 .subtitle {
@@ -243,10 +269,90 @@
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 220ms ease, background-color 220ms ease;
+}
+
+.submit:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .submit:disabled {
   opacity: 0.7;
+}
+
+.pageSuccess {
+  pointer-events: none;
+}
+
+.backgroundSuccess {
+  transform: scale(1.11);
+  filter: blur(1px);
+}
+
+.logoSuccess {
+  transform: translateX(-50%) translateY(-8px) scale(0.95);
+  opacity: 0.85;
+}
+
+.cardSuccess {
+  transform: translateY(-10px) scale(0.985);
+  box-shadow: 0 18px 40px rgba(59, 83, 193, 0.24);
+}
+
+.formSuccess {
+  opacity: 0.35;
+  transition: opacity 350ms ease;
+}
+
+.successState {
+  margin: 0 auto 16px;
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: center;
+  background: #ebf7ef;
+  border: 1px solid #bde5c8;
+  color: #1f5b35;
+  animation: popIn 420ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.successCheck {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  background: #2f9e5d;
+}
+
+.successTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.successSubtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+}
+
+.linkDisabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .divider {

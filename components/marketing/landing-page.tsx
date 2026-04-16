@@ -13,38 +13,16 @@ export function LandingPage() {
 
       <div className={styles.overlay}>
         <header className={styles.header}>
-          <div className={styles.navPill}>
-            <div className={styles.authHighlight} aria-hidden="true" />
-
-            <div className={styles.logoRing} aria-hidden="true" />
-            <div className={styles.logoInner} aria-hidden="true">
-              <Image
-                src="/logos/logo.png"
-                alt="BayaniHub logo"
-                width={116}
-                height={116}
-                className={styles.logoImage}
-                priority
-              />
-            </div>
-
-            <nav className={styles.nav} aria-label="Main navigation">
-              <Link className={styles.navLink} href="/">
-                Home
-              </Link>
-              <a className={styles.navLink} href="#about">
-                About Us
-              </a>
-            </nav>
-
-            <div className={styles.authNav}>
-              <Link className={styles.authLink} href="/signup">
-                Sign Up
-              </Link>
-              <Link className={styles.authLink} href="/login">
-                Log In
-              </Link>
-            </div>
+          <div className={styles.logoRing} aria-hidden="true" />
+          <div className={styles.logoInner} aria-hidden="true">
+            <Image
+              src="/logos/logo.png"
+              alt="BayaniHub logo"
+              width={116}
+              height={116}
+              className={styles.logoImage}
+              priority
+            />
           </div>
         </header>
 
@@ -65,11 +43,11 @@ export function LandingPage() {
             </section>
 
             <div className={styles.actions}>
-              <Link className={styles.primaryAction} href="/dashboard">
-                View Reports
+              <Link className={styles.primaryAction} href="/login">
+                Log In
               </Link>
               <Link className={styles.secondaryAction} href="/signup">
-                Report an Incident
+                Sign Up
               </Link>
             </div>
           </div>

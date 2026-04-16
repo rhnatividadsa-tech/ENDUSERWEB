@@ -123,6 +123,9 @@ export function SignupForm() {
         </div>
 
         <div className={styles.card}>
+          <Link href="/" className={styles.backLink}>
+            ← Back to home
+          </Link>
           <h1 className={styles.title}>Sign Up &amp; Verify</h1>
 
           <form onSubmit={handleSubmit}>
