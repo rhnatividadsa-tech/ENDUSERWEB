@@ -1,0 +1,336 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #ffc300;
+}
+
+.heroMedia {
+  position: absolute;
+  inset: 0 0 64px;
+}
+
+.heroImage {
+  position: absolute;
+  inset: -1.5% -3% 0;
+  background:
+    linear-gradient(rgba(41, 101, 162, 0.5), rgba(41, 101, 162, 0.5)),
+    url("/images/bg.png");
+  background-size: cover;
+  background-position: center;
+  filter: blur(4px);
+  transform: scale(1.035);
+}
+
+.heroImage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.heroImage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 18% 58%, rgba(255, 255, 255, 0.12), transparent 12%),
+    radial-gradient(circle at 54% 48%, rgba(255, 158, 62, 0.24), transparent 18%),
+    radial-gradient(circle at 78% 56%, rgba(255, 255, 255, 0.14), transparent 14%),
+    linear-gradient(90deg, rgba(34, 28, 14, 0.15), rgba(34, 28, 14, 0.02) 22%, rgba(34, 28, 14, 0.1) 72%, rgba(34, 28, 14, 0.22));
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(37, 29, 0, 0.42);
+}
+
+.bottomBand {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 64px;
+  background: #2965A2;
+}
+
+.overlay {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  padding: 28px 44px 86px;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  width: min(100%, 640px);
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navPill {
+  width: 100%;
+  min-height: 80px;
+  border-radius: 999px;
+  background: #5E70DC;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 20px 0 140px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  transform: translateX(0);
+  width: auto;
+  justify-content: flex-start;
+  flex: 1;
+}
+
+.nav a,
+.nav button {
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.navLink {
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  transition: opacity 0.2s ease;
+}
+
+.navLink:hover {
+  opacity: 0.8;
+  background: transparent;
+}
+
+.authHighlight {
+  position: absolute;
+  right: 120px;
+  top: 11px;
+  height: 58px;
+  width: 120px;
+  border-radius: 999px;
+  background: white;
+}
+
+.logoRing {
+  position: absolute;
+  left: -20px;
+  top: -20px;
+  width: 130px;
+  height: 120px;
+  border-radius: 36px;
+  background: #5E70DC;
+  z-index: 3;
+}
+
+.logoInner {
+  position: absolute;
+  left: -10px;
+  top: -10px;
+  width: 110px;
+  height: 100px;
+  border-radius: 32px;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  box-shadow: none;
+  z-index: 4;
+}
+
+.logoMark {
+  font-size: 15px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.logoImage {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.authNav {
+  position: absolute;
+  right: 12px;
+  top: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.authLink {
+  width: 108px;
+  text-align: center;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  position: relative;
+  z-index: 2;
+}
+
+.authLink:first-of-type {
+  color: #5E70DC;
+}
+
+.content {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 18px 20px 40px;
+}
+
+.heroBlock {
+  width: 100%;
+}
+
+.intro {
+  margin: 0 0 18px;
+  font-size: 24px;
+  font-style: italic;
+  font-weight: 500;
+  color: white;
+}
+
+.bayaniHubText {
+  font-style: normal;
+  color: #5E70DC;
+  font-weight: 800;
+}
+
+.headline {
+  max-width: 940px;
+  margin: 0 auto;
+  color: white;
+  font-size: clamp(3.25rem, 5.6vw, 4.55rem);
+  line-height: 1.06;
+  font-weight: 700;
+  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.headline span {
+  color: #5E70DC;
+}
+
+.support {
+  max-width: 700px;
+  margin: 24px auto 0;
+  color: white;
+  font-size: 17px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.aboutAnchor {
+  scroll-margin-top: 120px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 38px;
+  margin-top: 44px;
+  flex-wrap: wrap;
+}
+
+.primaryAction,
+.secondaryAction {
+  min-width: 180px;
+  min-height: 54px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 30px;
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.primaryAction {
+  background: #3B53C1;
+  color: white;
+  border: 1px solid #3B53C1;
+}
+
+.secondaryAction {
+  min-width: 252px;
+  border: 2px solid white;
+  color: white;
+  background: transparent;
+}
+
+@media (max-width: 900px) {
+  .overlay {
+    padding: 22px 16px 74px;
+  }
+
+  .header {
+    width: 100%;
+  }
+
+  .navPill {
+    min-height: unset;
+    border-radius: 32px;
+    padding: 94px 18px 18px;
+  }
+
+  .authHighlight {
+    left: 18px;
+    right: 18px;
+    top: 18px;
+    width: auto;
+    height: 56px;
+  }
+
+  .logoRing {
+    left: 50%;
+    top: -40px;
+    transform: translateX(-50%);
+  }
+
+  .logoInner {
+    left: 50%;
+    top: -25px;
+    transform: translateX(-50%);
+  }
+
+  .nav,
+  .authNav {
+    position: static;
+    height: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    transform: none;
+  }
+
+  .content {
+    padding-top: 30px;
+  }
+}
