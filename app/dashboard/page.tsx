@@ -80,6 +80,20 @@ export default function HomePage() {
               <Pressable
                 onPress={() => {
                   setShowUserMenu(false);
+                  router.push('/admin');
+                }}
+                style={({ hovered, pressed }: any) => [
+                  styles.logoutButton,
+                  hovered && styles.logoutButtonHovered,
+                  pressed && styles.logoutButtonPressed,
+                  { borderBottomWidth: 1, borderBottomColor: '#E5E7EB', borderRadius: 0 }
+                ]}
+              >
+                <Text style={[styles.logoutButtonText, { color: '#4273B8' }]}>Admin Dashboard</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setShowUserMenu(false);
                   logout();
                   router.replace('/login');
                 }}
@@ -87,6 +101,7 @@ export default function HomePage() {
                   styles.logoutButton,
                   hovered && styles.logoutButtonHovered,
                   pressed && styles.logoutButtonPressed,
+                  { borderRadius: 0 }
                 ]}
               >
                 <Text style={styles.logoutButtonText}>Logout</Text>

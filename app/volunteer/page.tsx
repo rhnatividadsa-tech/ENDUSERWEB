@@ -25,6 +25,7 @@ export default function VolunteerPage() {
 
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState('Select Time Slot');
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
@@ -90,10 +91,41 @@ export default function VolunteerPage() {
     transportMode.trim() !== '' && 
     conductChecks.conduct && conductChecks.confidential && conductChecks.safety;
 
-  const handleSubmitFinal = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmitFinal = async () => {
     if (isStep3Valid) {
-      setShowErrors(false);
-      setStep(4);
+      try {
+        setIsSubmitting(true);
+        const response = await fetch('http://localhost:3001/api/v1/volunteers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            siteLocation: selectedSite,
+            timeSlot: selectedTime,
+            role: selectedRole,
+            qDisaster,
+            qRugged,
+            qMedical,
+            qVaccines,
+            qLift,
+            qTransport,
+            transportMode,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to submit application');
+        }
+
+        setShowErrors(false);
+        setStep(4);
+      } catch (error) {
+        alert('Failed to submit application. Please try again.');
+        console.error(error);
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       setShowErrors(true);
     }
@@ -171,13 +203,47 @@ export default function VolunteerPage() {
         </View>
         <View style={styles.navRight}>
           <Pressable style={styles.iconButton}><Image source={{ uri: '/icon-bell.png' }} style={styles.navIcon} resizeMode="contain" /></Pressable>
-          <Pressable style={styles.userProfile}>
-            <Image source={{ uri: '/icon-user.png' }} style={styles.navIcon} resizeMode="contain" />
-            <View>
-              <Text style={styles.userName}>User</Text>
-              <Text style={styles.userRole}>Role</Text>
-            </View>
-          </Pressable>
+          <View style={{ position: 'relative' }}>
+            <Pressable 
+              style={styles.userProfile} 
+              onPress={() => setShowUserMenu(!showUserMenu)}
+            >
+              <Image source={{ uri: '/icon-user.png' }} style={styles.navIcon} resizeMode="contain" />
+              <View>
+                <Text style={styles.userName}>User</Text>
+                <Text style={styles.userRole}>Role</Text>
+              </View>
+            </Pressable>
+
+            {showUserMenu && (
+              <View style={[styles.userMenu, { position: 'absolute', top: 50, right: 0, backgroundColor: 'white', borderRadius: 8, padding: 5, zIndex: 1000, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 10, width: 150 }]}>
+                <Pressable
+                  onPress={() => {
+                    setShowUserMenu(false);
+                    router.push('/admin');
+                  }}
+                  style={({ hovered }: any) => [
+                    { padding: 10, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+                    hovered && { backgroundColor: '#F3F4F6' }
+                  ]}
+                >
+                  <Text style={{ color: '#4273B8', fontWeight: '500' }}>Admin Dashboard</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setShowUserMenu(false);
+                    router.replace('/login');
+                  }}
+                  style={({ hovered }: any) => [
+                    { padding: 10 },
+                    hovered && { backgroundColor: '#F3F4F6' }
+                  ]}
+                >
+                  <Text style={{ color: '#EF4444', fontWeight: '500' }}>Logout</Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
         </View>
       </View>
 

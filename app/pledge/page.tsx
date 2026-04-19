@@ -26,7 +26,8 @@ export default function PledgePage() {
   const [showErrors, setShowErrors] = useState(false);
   const [showModal, setShowModal] = useState(false); 
   const [showVolunteerModal, setShowVolunteerModal] = useState(false); 
-  const [showSimpleSuccessModal, setShowSimpleSuccessModal] = useState(false); // NEW MODAL STATE
+  const [showSimpleSuccessModal, setShowSimpleSuccessModal] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false); // NEW MODAL STATE
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   const ustBuildings = ["UST Main Building", "UST Hospital", "Roque Ruaño Building", "St. Martin de Porres Building", "St. Pier Giorgio Frassati, O.P. Building", "Albertus Magnus Building", "Benavides Building", "St. Raymund de Peñafort Building"];
@@ -52,17 +53,41 @@ export default function PledgePage() {
     } else { setShowErrors(true); }
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // --- NEW LOGIC: Route to the correct modal based on the flag ---
-  const handleFinalConfirm = () => {
+  const handleFinalConfirm = async () => {
     if (isConfirmed) { 
-      setShowModal(false); 
-      
-      if (cameFromVolunteer) {
-        setShowSimpleSuccessModal(true);
-        // Clean up the flag so it doesn't trigger on future separate visits
-        if (typeof window !== 'undefined') sessionStorage.removeItem('fromVolunteer');
-      } else {
-        setShowVolunteerModal(true); 
+      try {
+        setIsSubmitting(true);
+        const response = await fetch('http://localhost:3001/api/v1/donations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            siteLocation: selectedSite,
+            timeSlot: selectedTime,
+            items: validItems,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to submit pledge');
+        }
+
+        setShowModal(false); 
+        
+        if (cameFromVolunteer) {
+          setShowSimpleSuccessModal(true);
+          // Clean up the flag so it doesn't trigger on future separate visits
+          if (typeof window !== 'undefined') sessionStorage.removeItem('fromVolunteer');
+        } else {
+          setShowVolunteerModal(true); 
+        }
+      } catch (error) {
+        alert('Failed to submit pledge. Please try again.');
+        console.error(error);
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -168,13 +193,47 @@ export default function PledgePage() {
         </View>
         <View style={styles.navRight}>
           <Pressable style={styles.iconButton}><Image source={{ uri: '/icon-bell.png' }} style={styles.navIcon} resizeMode="contain" /></Pressable>
-          <Pressable style={styles.userProfile}>
-            <Image source={{ uri: '/icon-user.png' }} style={styles.navIcon} resizeMode="contain" />
-            <View>
-              <Text style={styles.userName}>User</Text>
-              <Text style={styles.userRole}>Role</Text>
-            </View>
-          </Pressable>
+          <View style={{ position: 'relative' }}>
+            <Pressable 
+              style={styles.userProfile} 
+              onPress={() => setShowUserMenu(!showUserMenu)}
+            >
+              <Image source={{ uri: '/icon-user.png' }} style={styles.navIcon} resizeMode="contain" />
+              <View>
+                <Text style={styles.userName}>User</Text>
+                <Text style={styles.userRole}>Role</Text>
+              </View>
+            </Pressable>
+
+            {showUserMenu && (
+              <View style={[styles.userMenu, { position: 'absolute', top: 50, right: 0, backgroundColor: 'white', borderRadius: 8, padding: 5, zIndex: 1000, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 10, width: 150 }]}>
+                <Pressable
+                  onPress={() => {
+                    setShowUserMenu(false);
+                    router.push('/admin');
+                  }}
+                  style={({ hovered }: any) => [
+                    { padding: 10, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+                    hovered && { backgroundColor: '#F3F4F6' }
+                  ]}
+                >
+                  <Text style={{ color: '#4273B8', fontWeight: '500' }}>Admin Dashboard</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => {
+                    setShowUserMenu(false);
+                    router.replace('/login');
+                  }}
+                  style={({ hovered }: any) => [
+                    { padding: 10 },
+                    hovered && { backgroundColor: '#F3F4F6' }
+                  ]}
+                >
+                  <Text style={{ color: '#EF4444', fontWeight: '500' }}>Logout</Text>
+                </Pressable>
+              </View>
+            )}
+          </View>
         </View>
       </View>
 

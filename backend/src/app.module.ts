@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SupabaseModule } from './supabase/supabase.module';
 import { AuthModule } from './auth/auth.module';
+import { DonationsModule } from './donations/donations.module';
+import { VolunteersModule } from './volunteers/volunteers.module';
 
 @Module({
   imports: [
@@ -11,6 +13,8 @@ import { AuthModule } from './auth/auth.module';
     // Decoupled modules — each can be extracted to its own microservice
     SupabaseModule,
     AuthModule,
+    DonationsModule,
+    VolunteersModule,
   ],
 })
 export class AppModule {}
