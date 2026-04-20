@@ -9,7 +9,7 @@ import { useState } from 'react';
 
 export default function HomePage() {
   const router = useRouter();
-  const { token, isReady, logout } = useAuth();
+  const { token, isReady, logout, user } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function HomePage() {
           </Pressable>
           
           <View style={styles.navLinks}>
-            <Pressable>
+            <Pressable onPress={() => router.push('/dashboard')}>
               {({ hovered }: any) => (
                 <Text style={[styles.navLink, styles.activeLink, { transition: 'all 0.2s ease' }, hovered && { color: '#4273B8' }]}>Home</Text>
               )}
@@ -70,27 +70,12 @@ export default function HomePage() {
           >
             <Image source={{ uri: '/icon-user.png' }} style={styles.navIcon} resizeMode="contain" />
             <View>
-              <Text style={styles.userName}>User</Text>
-              <Text style={styles.userRole}>Role</Text>
+              <Text style={styles.userName}>{user?.profile?.first_name} {user?.profile?.last_name}</Text>
             </View>
           </Pressable>
 
           {showUserMenu ? (
             <View style={styles.userMenu}>
-              <Pressable
-                onPress={() => {
-                  setShowUserMenu(false);
-                  router.push('/admin');
-                }}
-                style={({ hovered, pressed }: any) => [
-                  styles.logoutButton,
-                  hovered && styles.logoutButtonHovered,
-                  pressed && styles.logoutButtonPressed,
-                  { borderBottomWidth: 1, borderBottomColor: '#E5E7EB', borderRadius: 0 }
-                ]}
-              >
-                <Text style={[styles.logoutButtonText, { color: '#4273B8' }]}>Admin Dashboard</Text>
-              </Pressable>
               <Pressable
                 onPress={() => {
                   setShowUserMenu(false);

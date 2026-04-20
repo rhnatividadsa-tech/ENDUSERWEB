@@ -1,8 +1,26 @@
+'use client';
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./landing-page.module.css";
+import { useAuth } from "@/lib/auth-context";
 
 export function LandingPage() {
+  const { token } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (token) {
+      router.replace("/dashboard");
+    }
+  }, [token, router]);
+
+  if (token) {
+    return null;
+  }
+
   return (
     <main className={styles.page}>
       <div className={styles.heroMedia} aria-hidden="true">
@@ -43,12 +61,20 @@ export function LandingPage() {
             </section>
 
             <div className={styles.actions}>
-              <Link className={styles.primaryAction} href="/login">
-                Log In
-              </Link>
-              <Link className={styles.secondaryAction} href="/signup">
-                Sign Up
-              </Link>
+              {token ? (
+                <Link className={styles.primaryAction} href="/dashboard">
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link className={styles.primaryAction} href="/login">
+                    Log In
+                  </Link>
+                  <Link className={styles.secondaryAction} href="/signup">
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </section>

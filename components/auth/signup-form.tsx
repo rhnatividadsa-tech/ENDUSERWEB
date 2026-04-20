@@ -8,7 +8,8 @@ import { useAuth } from "@/lib/auth-context";
 import styles from "./signup-form.module.css";
 
 type FormState = {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   birthDate: string;
@@ -18,13 +19,15 @@ type FormState = {
 
 export function SignupForm() {
   const router = useRouter();
-  const { signup } = useAuth();
+  const { signup, login } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     birthDate: "",
@@ -42,18 +45,24 @@ export function SignupForm() {
   const validate = () => {
     const nextErrors: typeof errors = {};
 
-    if (!form.name.trim()) nextErrors.name = "Full name is required.";
+    if (!form.firstName.trim()) nextErrors.firstName = "First name is required.";
+    if (!form.lastName.trim()) nextErrors.lastName = "Last name is required.";
     if (!form.email.trim()) {
       nextErrors.email = "Email is required.";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       nextErrors.email = "Enter a valid email address.";
     }
     if (!form.phone.trim()) nextErrors.phone = "Phone number is required.";
-    if (!form.birthDate.trim()) nextErrors.birthDate = "Date of birth is required.";
+    if (!form.birthDate.trim()) {
+      nextErrors.birthDate = "Date of birth is required.";
+    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(form.birthDate)) {
+      nextErrors.birthDate = "Use YYYY-MM-DD format.";
+    }
     if (form.password.length < 6) nextErrors.password = "Password must be at least 6 characters.";
     if (form.confirmPassword !== form.password) {
       nextErrors.confirmPassword = "Passwords do not match.";
     }
+    
     if (!selectedFile) nextErrors.file = "Verification file is required.";
 
     setErrors(nextErrors);
@@ -76,28 +85,24 @@ export function SignupForm() {
       fd.append("email", form.email.trim());
       fd.append("password", form.password);
 
-      // Split "Full Name" into first_name / last_name
-      const nameParts = form.name.trim().split(/\s+/);
-      fd.append("first_name", nameParts[0] || "");
-      fd.append("last_name", nameParts.slice(1).join(" ") || "");
-
+      fd.append("first_name", form.firstName.trim());
+      fd.append("last_name", form.lastName.trim());
       fd.append("phone", form.phone.trim());
 
-      // Convert mm/dd/yyyy to ISO YYYY-MM-DD for the backend DTO
-      const rawDate = form.birthDate.trim();
-      const dateParts = rawDate.split("/");
-      const isoDob =
-        dateParts.length === 3
-          ? `${dateParts[2]}-${dateParts[0].padStart(2, "0")}-${dateParts[1].padStart(2, "0")}`
-          : rawDate;
-      fd.append("dob", isoDob);
+      // Send DOB as-is (frontend now matches backend format YYYY-MM-DD)
+      fd.append("dob", form.birthDate.trim());
 
       if (selectedFile) {
         fd.append("id_document", selectedFile);
       }
 
       await signup(fd);
-      router.push("/signup/review");
+      
+      setIsSuccess(true);
+      
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (error) {
       setServerError(error instanceof Error ? error.message : "Unable to create account.");
     } finally {
@@ -123,6 +128,13 @@ export function SignupForm() {
         </div>
 
         <div className={styles.card}>
+          {isSuccess && (
+            <div className={styles.successOverlay}>
+              <div className={styles.successIcon}>✓</div>
+              <h2 className={styles.successTitle}>Account created successfully!</h2>
+              <p className={styles.successMessage}>Redirecting you to login module...</p>
+            </div>
+          )}
           <Link href="/" className={styles.backLink}>
             ← Back to home
           </Link>
@@ -146,15 +158,28 @@ export function SignupForm() {
 
                 <label className={styles.field}>
                   <input
-                    className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
-                    value={form.name}
+                    className={`${styles.input} ${errors.firstName ? styles.inputError : ""}`}
+                    value={form.firstName}
                     onChange={(event) =>
-                      setForm((current) => ({ ...current, name: event.target.value }))
+                      setForm((current) => ({ ...current, firstName: event.target.value }))
                     }
                     type="text"
-                    placeholder="Full Name*"
+                    placeholder="First Name*"
                   />
-                  {errors.name ? <span className={styles.error}>{errors.name}</span> : null}
+                  {errors.firstName ? <span className={styles.error}>{errors.firstName}</span> : null}
+                </label>
+
+                <label className={styles.field}>
+                  <input
+                    className={`${styles.input} ${errors.lastName ? styles.inputError : ""}`}
+                    value={form.lastName}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, lastName: event.target.value }))
+                    }
+                    type="text"
+                    placeholder="Last Name*"
+                  />
+                  {errors.lastName ? <span className={styles.error}>{errors.lastName}</span> : null}
                 </label>
 
                 <label className={styles.field}>
@@ -165,7 +190,7 @@ export function SignupForm() {
                       setForm((current) => ({ ...current, phone: event.target.value }))
                     }
                     type="tel"
-                    placeholder="Phone Number* (e.g. 9XXXXXXXXX)"
+                    placeholder="Phone Number* (e.g. 09171234567)"
                   />
                   {errors.phone ? <span className={styles.error}>{errors.phone}</span> : null}
                 </label>
@@ -177,7 +202,7 @@ export function SignupForm() {
                     onChange={(event) =>
                       setForm((current) => ({ ...current, birthDate: event.target.value }))
                     }
-                    placeholder="Date of Birth* (mm/dd/yyyy)"
+                    placeholder="Date of Birth* (YYYY-MM-DD)"
                     type="text"
                   />
                   {errors.birthDate ? (
@@ -273,5 +298,6 @@ export function SignupForm() {
         </div>
       </section>
     </main>
+
   );
 }

@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Image, ScrollView, TextInput } from 'react-native';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
 
 export default function VolunteerPage() {
   const router = useRouter();
+  const { token, user, logout, isReady } = useAuth();
 
   // --- NEW: Track if they came from the Pledge page ---
   const [cameFromPledge, setCameFromPledge] = useState(false);
@@ -22,6 +24,7 @@ export default function VolunteerPage() {
   // --- FORM STATES (Step 2) ---
   const [isSiteDropdownOpen, setIsSiteDropdownOpen] = useState(false);
   const [selectedSite, setSelectedSite] = useState('Select Site Location');
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
 
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
   const [selectedTime, setSelectedTime] = useState('Select Time Slot');
@@ -34,6 +37,24 @@ export default function VolunteerPage() {
     documents: false,
     age: false,
   });
+
+  // --- NEW: Dynamic Sites & File Upload ---
+  const [volunteerCampaigns, setVolunteerCampaigns] = useState<any[]>([]);
+  const fileInputRef = useRef<any>(null);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        const res = await fetch('http://localhost:3001/api/v1/forms/campaigns/volunteer');
+        const data = await res.json();
+        setVolunteerCampaigns(data.data || []);
+      } catch (err) {
+        console.error('Error fetching site locations:', err);
+      }
+    };
+    fetchCampaigns();
+  }, []);
 
   // --- AUTO-CHECK LOGIC FOR FIELD ROLE ---
   useEffect(() => {
@@ -59,13 +80,6 @@ export default function VolunteerPage() {
 
   const [showErrors, setShowErrors] = useState(false);
 
-  // --- DATA ---
-  const ustBuildings = [
-    "UST Main Building", "UST Hospital", "Roque Ruaño Building",
-    "St. Martin de Porres Building", "St. Pier Giorgio Frassati, O.P. Building",
-    "Albertus Magnus Building", "Benavides Building", "St. Raymund de Peñafort Building"
-  ];
-
   const timeSlots = [
     "Morning (8:00 AM - 12:00 PM)", "Afternoon (1:00 PM - 5:00 PM)", "Evening (5:00 PM - 8:00 PM)"
   ];
@@ -74,7 +88,7 @@ export default function VolunteerPage() {
   const isSiteValid = selectedSite !== 'Select Site Location';
   const isTimeValid = selectedTime !== 'Select Time Slot';
   const isRoleValid = selectedRole !== null;
-  const isCheckboxesValid = checkboxes.background && checkboxes.documents && checkboxes.age;
+  const isCheckboxesValid = checkboxes.background && (checkboxes.documents || resumeFile) && checkboxes.age;
   
   const handleNextToStep3 = () => {
     if (isSiteValid && isTimeValid && isRoleValid && isCheckboxesValid) {
@@ -94,24 +108,42 @@ export default function VolunteerPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmitFinal = async () => {
+    if (!token) {
+      alert('You must be logged in to submit an application.');
+      return;
+    }
+
     if (isStep3Valid) {
       try {
         setIsSubmitting(true);
-        const response = await fetch('http://localhost:3001/api/v1/volunteers', {
+        const fd = new FormData();
+        fd.append('center_id', selectedCampaignId || '');
+        fd.append('center_name', selectedSite);
+        fd.append('time_slot', selectedTime);
+        fd.append('role', selectedRole || '');
+        
+        // Exact mobile fields
+        fd.append('disaster_experience', String(qDisaster));
+        fd.append('rugged_environment', String(qRugged));
+        fd.append('medical_conditions', String(qMedical));
+        fd.append('vaccinations_current', String(qVaccines));
+        fd.append('can_lift_25lbs', String(qLift));
+        fd.append('has_transportation', String(qTransport));
+        fd.append('transportation_mode', transportMode);
+        fd.append('background_check_agreed', String(conductChecks.conduct)); // Map to backend expected
+        fd.append('documents_agreed', String(conductChecks.confidential));
+        fd.append('age_verified', String(checkboxes.age));
+
+        if (resumeFile) {
+          fd.append('resume', resumeFile);
+        }
+
+        const response = await fetch('http://localhost:3001/api/v1/forms/volunteer', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            siteLocation: selectedSite,
-            timeSlot: selectedTime,
-            role: selectedRole,
-            qDisaster,
-            qRugged,
-            qMedical,
-            qVaccines,
-            qLift,
-            qTransport,
-            transportMode,
-          }),
+          headers: { 
+            'Authorization': `Bearer ${token}` 
+          },
+          body: fd,
         });
 
         if (!response.ok) {
@@ -149,24 +181,24 @@ export default function VolunteerPage() {
         <View style={[styles.trackerBar, currentStep >= 3 ? styles.trackerBarActive : {}]} />
         <View style={[styles.trackerBar, currentStep >= 4 ? styles.trackerBarActive : {}]} />
       </View>
-      <View style={styles.trackerLabelsRow}>
-        <View style={styles.trackerLabelBox}>
+      <div style={{ display: 'flex', gap: '12px', justifyContent: 'space-between', marginTop: '12px' }}>
+        <div style={{ flex: 1 }}>
           <Text style={[styles.trackerLabelText, currentStep === 1 && styles.trackerLabelActive]}>[1] View Detailed Role Requirements:</Text>
           <Text style={styles.trackerLabelSubText}>({currentStep > 1 ? 'Completed' : 'Current Step'})</Text>
-        </View>
-        <View style={styles.trackerLabelBox}>
+        </div>
+        <div style={{ flex: 1 }}>
           <Text style={[styles.trackerLabelText, currentStep === 2 && styles.trackerLabelActive]}>[2] Role Selection & Document Upload:</Text>
           <Text style={styles.trackerLabelSubText}>({currentStep > 2 ? 'Completed' : currentStep === 2 ? 'Current Step' : 'Upcoming'})</Text>
-        </View>
-        <View style={styles.trackerLabelBox}>
+        </div>
+        <div style={{ flex: 1 }}>
           <Text style={[styles.trackerLabelText, currentStep === 3 && styles.trackerLabelActive]}>[3] General Screening Questionnaire:</Text>
           <Text style={styles.trackerLabelSubText}>({currentStep > 3 ? 'Completed' : currentStep === 3 ? 'Current Step' : 'Upcoming'})</Text>
-        </View>
-        <View style={styles.trackerLabelBox}>
+        </div>
+        <div style={{ flex: 1 }}>
           <Text style={[styles.trackerLabelText, currentStep === 4 && styles.trackerLabelActive]}>[4] Admin Review & Badge Issuance:</Text>
           <Text style={styles.trackerLabelSubText}>({currentStep === 4 ? 'Current Step' : 'Upcoming'})</Text>
-        </View>
-      </View>
+        </div>
+      </div>
     </View>
   );
 
@@ -187,17 +219,21 @@ export default function VolunteerPage() {
     </View>
   );
 
+  if (!isReady) {
+    return null;
+  }
+
   return (
     <View style={styles.container}>
       {/* NAVIGATION BAR */}
       <View style={styles.navBar}>
         <View style={styles.navLeft}>
-          <Pressable onPress={() => router.push('/')} style={styles.logoContainer}>
+          <Pressable onPress={() => router.push('/dashboard')} style={styles.logoContainer}>
             <Image source={{ uri: '/logo_b.png' }} style={styles.logoImage} resizeMode="contain" />
             <Text style={styles.brandName}>BayaniHub</Text>
           </Pressable>
           <View style={styles.navLinks}>
-            <Pressable onPress={() => router.push('/')}><Text style={styles.navLink}>Home</Text></Pressable>
+            <Pressable onPress={() => router.push('/dashboard')}><Text style={styles.navLink}>Home</Text></Pressable>
             <Pressable onPress={() => router.push('/about')}><Text style={styles.navLink}>About Us</Text></Pressable>
           </View>
         </View>
@@ -210,28 +246,16 @@ export default function VolunteerPage() {
             >
               <Image source={{ uri: '/icon-user.png' }} style={styles.navIcon} resizeMode="contain" />
               <View>
-                <Text style={styles.userName}>User</Text>
-                <Text style={styles.userRole}>Role</Text>
+                <Text style={styles.userName}>{user?.profile?.first_name} {user?.profile?.last_name}</Text>
               </View>
             </Pressable>
 
             {showUserMenu && (
-              <View style={[styles.userMenu, { position: 'absolute', top: 50, right: 0, backgroundColor: 'white', borderRadius: 8, padding: 5, zIndex: 1000, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 10, width: 150 }]}>
+              <View style={styles.userMenu}>
                 <Pressable
                   onPress={() => {
                     setShowUserMenu(false);
-                    router.push('/admin');
-                  }}
-                  style={({ hovered }: any) => [
-                    { padding: 10, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
-                    hovered && { backgroundColor: '#F3F4F6' }
-                  ]}
-                >
-                  <Text style={{ color: '#4273B8', fontWeight: '500' }}>Admin Dashboard</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setShowUserMenu(false);
+                    logout();
                     router.replace('/login');
                   }}
                   style={({ hovered }: any) => [
@@ -307,7 +331,7 @@ export default function VolunteerPage() {
                 </View>
               </View>
 
-              <View style={[styles.bottomAnchorBox, { alignItems: 'flex-end' }]}>
+              <View style={[styles.bottomAnchorBox, { alignItems: 'flex-end', marginTop: 40 }]}>
                 <Pressable style={(state: any) => [styles.blueButton, state.hovered && styles.btnHover]} onPress={() => setStep(2)}>
                   <Text style={styles.blueButtonText}>Done Reading</Text>
                 </Pressable>
@@ -334,15 +358,18 @@ export default function VolunteerPage() {
                         <Text style={[styles.dropdownBoxText, !isSiteValid && {color: '#9CA3AF'}]}>{selectedSite !== 'Select Site Location' ? selectedSite : '"Select Site Location"'}</Text>
                         <Image source={{ uri: '/chevron-down.png' }} style={styles.dropdownIcon} />
                       </Pressable>
-                      {showErrors && !isSiteValid && <Text style={styles.errorText}>● Site Location is required.</Text>}
+                      {showErrors && !isSiteValid && <Text style={styles.errorText}>• Site Location is required.</Text>}
                       {isSiteDropdownOpen && (
                         <View style={styles.dropdownMenuList}>
                           <ScrollView style={{ maxHeight: 200 }} showsVerticalScrollIndicator={true}>
-                            {ustBuildings.map((building, index) => (
-                              <Pressable key={index} style={styles.dropdownMenuItem} onPress={() => { setSelectedSite(building); setIsSiteDropdownOpen(false); }}>
-                                <Text style={styles.dropdownMenuItemText}>{building}</Text>
+                            {volunteerCampaigns.map((camp, index) => (
+                              <Pressable key={index} style={styles.dropdownMenuItem} onPress={() => { setSelectedSite(camp.name); setSelectedCampaignId(camp.id); setIsSiteDropdownOpen(false); }}>
+                                <Text style={styles.dropdownMenuItemText}>{camp.name}</Text>
                               </Pressable>
                             ))}
+                            {volunteerCampaigns.length === 0 && (
+                              <View style={styles.dropdownMenuItem}><Text style={styles.dropdownMenuItemText}>No sites available</Text></View>
+                            )}
                           </ScrollView>
                         </View>
                       )}
@@ -354,7 +381,7 @@ export default function VolunteerPage() {
                         <Text style={[styles.dropdownBoxText, !isTimeValid && {color: '#9CA3AF'}]}>{selectedTime !== 'Select Time Slot' ? selectedTime : '"Select Time Slot"'}</Text>
                         <Image source={{ uri: '/chevron-down.png' }} style={styles.dropdownIcon} />
                       </Pressable>
-                      {showErrors && !isTimeValid && <Text style={styles.errorText}>● Time Slot is required.</Text>}
+                      {showErrors && !isTimeValid && <Text style={styles.errorText}>• Time Slot is required.</Text>}
                       {isTimeDropdownOpen && (
                         <View style={styles.dropdownMenuList}>
                           <ScrollView style={{ maxHeight: 150 }} showsVerticalScrollIndicator={true}>
@@ -384,27 +411,33 @@ export default function VolunteerPage() {
                       <Text style={[styles.roleSelectBoxText, selectedRole === 'field' && styles.roleSelectBoxTextActive]}>Field</Text>
                     </Pressable>
                   </View>
-                  {showErrors && !isRoleValid && <Text style={[styles.errorText, {marginTop: -10, marginBottom: 20}]}>● Role selection is required.</Text>}
+                  {showErrors && !isRoleValid && <Text style={[styles.errorText, {marginTop: -10, marginBottom: 20}]}>• Role selection is required.</Text>}
 
                   <Text style={[styles.inputLabel, { marginTop: 10 }]}>Required Document:</Text>
                   <View style={styles.documentUploadGroup}>
                     {selectedRole === null && <Text style={{color: '#9CA3AF', fontSize: 14}}>Select a role to view documents.</Text>}
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      style={{ display: 'none' }} 
+                      onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                    />
                     {selectedRole === 'medic' && (
                       <View style={styles.uploadContainer}>
                         <View style={styles.uploadInfoRow}>
                           <Image source={{ uri: '/file.svg' }} style={styles.fileIcon} />
-                          <Text style={styles.uploadInfoText}>Upload Medical License (e.g., MD, RN)</Text>
+                          <Text style={styles.uploadInfoText}>{resumeFile ? resumeFile.name : 'Upload Medical License (e.g., MD, RN)'}</Text>
                         </View>
-                        <Pressable style={styles.smallBlueBtn}><Text style={styles.smallBlueBtnText}>Upload</Text></Pressable>
+                        <Pressable style={styles.smallBlueBtn} onPress={() => fileInputRef.current?.click()}><Text style={styles.smallBlueBtnText}>Upload</Text></Pressable>
                       </View>
                     )}
                     {selectedRole === 'logistics' && (
                       <View style={styles.uploadContainer}>
                         <View style={styles.uploadInfoRow}>
                           <Image source={{ uri: '/file.svg' }} style={styles.fileIcon} />
-                          <Text style={styles.uploadInfoText}>Upload Valid Driver's License</Text>
+                          <Text style={styles.uploadInfoText}>{resumeFile ? resumeFile.name : "Upload Valid Driver's License"}</Text>
                         </View>
-                        <Pressable style={styles.smallBlueBtn}><Text style={styles.smallBlueBtnText}>Upload</Text></Pressable>
+                        <Pressable style={styles.smallBlueBtn} onPress={() => fileInputRef.current?.click()}><Text style={styles.smallBlueBtnText}>Upload</Text></Pressable>
                       </View>
                     )}
                     {selectedRole === 'field' && (
@@ -431,7 +464,7 @@ export default function VolunteerPage() {
                         {checkboxes.documents && <Text style={styles.checkmarkIcon}>✓</Text>}
                       </View>
                       <Text style={[styles.checkboxText, showErrors && !checkboxes.documents && {color: '#EF4444'}]}>
-                        {selectedRole === 'field' ? 'I acknowledge requirements.' : 'I have uploaded all required documents.'}
+                        {selectedRole === 'field' ? 'I acknowledge requirements.' : (resumeFile ? 'Document attached.' : 'I have uploaded all required documents.')}
                       </Text>
                     </Pressable>
 
@@ -444,7 +477,7 @@ export default function VolunteerPage() {
                   </View>
                   
                   {showErrors && (!isSiteValid || !isTimeValid || !isRoleValid || !isCheckboxesValid) && (
-                    <Text style={[styles.errorText, {marginTop: 20}]}>● Please check all required fields.</Text>
+                    <Text style={[styles.errorText, {marginTop: 20}]}>• Please check all required fields.</Text>
                   )}
                 </View>
               </View>
@@ -573,7 +606,7 @@ export default function VolunteerPage() {
                       <Text style={styles.blueButtonText}>Submit Assessment</Text>
                     </Pressable>
                   </View>
-                  {showErrors && !isStep3Valid && <Text style={[styles.errorText, {marginTop: 15, textAlign: 'right'}]}>● Please complete all required fields.</Text>}
+                  {showErrors && !isStep3Valid && <Text style={[styles.errorText, {marginTop: 15, textAlign: 'right'}]}>• Please complete all required fields.</Text>}
                 </View>
               </View>
 
@@ -797,4 +830,19 @@ const styles = StyleSheet.create({
   yesDonorBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: 'bold' },
   noDonorBtn: { backgroundColor: '#F3F4F6', paddingVertical: 14, paddingHorizontal: 30, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#D1D5DB' },
   noDonorBtnText: { color: '#374151', fontSize: 15, fontWeight: 'bold' },
+  userMenu: { 
+    position: 'absolute', 
+    top: 50, 
+    right: 0, 
+    backgroundColor: 'white', 
+    borderRadius: 8, 
+    padding: 5, 
+    zIndex: 1000, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 4 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 6, 
+    elevation: 10, 
+    width: 150 
+  } as any,
 });

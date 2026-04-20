@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
@@ -35,36 +35,29 @@ const TOKEN_STORAGE_KEY = "bayanihub-web-token";
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
+  useEffect(() => {
+    // Load from localStorage only on mount to prevent hydration mismatch
     const storedUser = window.localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!storedUser) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(storedUser) as AuthUser;
-    } catch {
-      window.localStorage.removeItem(AUTH_STORAGE_KEY);
-      return null;
-    }
-  });
-  const [token, setToken] = useState<string | null>(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
     const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY);
-    if (!storedToken) {
-      return null;
+
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        window.localStorage.removeItem(AUTH_STORAGE_KEY);
+      }
     }
 
-    return storedToken;
-  });
-  const isReady = true;
+    if (storedToken) {
+      setToken(storedToken);
+    }
+
+    setIsReady(true);
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
