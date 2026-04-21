@@ -34,6 +34,35 @@ export class SupabaseService implements OnModuleInit {
     });
 
     this.logger.log('Connected to BayaniHub DB and Damayan DB');
+    
+    // Ensure storage buckets exist
+    this.initializeBuckets();
+  }
+
+  private async initializeBuckets() {
+    const required = ['volunteer-documents', 'identity-documents'];
+    try {
+      const { data: buckets, error } = await this.client.storage.listBuckets();
+      if (error) throw error;
+
+      for (const bucketName of required) {
+        if (!buckets.find(b => b.name === bucketName)) {
+          this.logger.log(`Storage Bucket "${bucketName}" missing. Creating...`);
+          const { error: createError } = await this.client.storage.createBucket(bucketName, {
+            public: true,
+            allowedMimeTypes: ['image/png', 'image/jpeg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            fileSizeLimit: 10 * 1024 * 1024 // 10MB
+          });
+          if (createError) {
+            this.logger.error(`Failed to create bucket "${bucketName}": ${createError.message}`);
+          } else {
+            this.logger.log(`Storage Bucket "${bucketName}" created successfully.`);
+          }
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`Initial bucket check failed (possibly insufficient permissions): ${err.message}`);
+    }
   }
 
   getClient(): SupabaseClient {
@@ -56,18 +85,32 @@ export class SupabaseService implements OnModuleInit {
 
   async insertVolunteerApplication(data: any, volunteerAuthId: string, file?: Express.Multer.File) {
     const { role, center_id, campaign_id, center_name } = data;
-    const finalCampaignId = center_id || campaign_id || center_name;
+    
+    // Determine the ID and a human-readable name
+    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+    
+    const validCampaignId = isUUID(center_id) ? center_id : (isUUID(campaign_id) ? campaign_id : null);
+    const displayName = center_name || (validCampaignId ? 'In-Progress Selection' : 'N/A');
 
-    if (!finalCampaignId || !role) {
-      throw new Error("Missing center_id or role in application payload.");
+    if (!validCampaignId && !center_name) {
+      throw new Error("Missing site location or campaign identifier.");
     }
 
-    // 1. Resolve role_id
-    let { data: roles } = await this.client
+    if (!role) {
+      throw new Error("Missing selected role in application payload.");
+    }
+
+    // 1. Resolve role_id (scoped to campaign if ID is available)
+    let query = this.client
       .from('volunteer_roles')
       .select('id')
-      .ilike('title', role)
-      .limit(1);
+      .ilike('title', role);
+      
+    if (validCampaignId) {
+      query = query.eq('campaign_id', validCampaignId);
+    }
+
+    let { data: roles } = await query.limit(1);
 
     let roleId;
     if (!roles || roles.length === 0) {
@@ -75,7 +118,7 @@ export class SupabaseService implements OnModuleInit {
         .from('volunteer_roles')
         .insert([{
           title: role,
-          campaign_id: finalCampaignId,
+          campaign_id: validCampaignId, // Will be null if no valid UUID
           status: 'open',
           slots_total: 10
         }]).select('id').single();
@@ -93,7 +136,7 @@ export class SupabaseService implements OnModuleInit {
 
     // 3. Condense Questionnaire Data
     const motivationStr = `Questionnaire Assessment:
-- Site/Campaign: ${finalCampaignId || 'N/A'}
+- Site/Campaign: ${displayName} (${validCampaignId || 'No UUID Mapping'})
 - Disaster Experience: ${data.disaster_experience === 'true' || data.disaster_experience === true ? 'Yes' : 'No'}
 - Rugged Environment Comfort: ${data.rugged_environment === 'true' || data.rugged_environment === true ? 'Yes' : 'No'}
 - Medical Conditions/Restrictions: ${data.medical_conditions === 'true' || data.medical_conditions === true ? 'Yes' : 'No'}
@@ -106,21 +149,26 @@ export class SupabaseService implements OnModuleInit {
 - Code of Conduct / Safety Agreed: Yes`;
 
     // 4. Insert Application
+    const applicationPayload = {
+      role_id: roleId,
+      volunteer_auth_id: volunteerAuthId,
+      motivation: motivationStr,
+      skills: [role || 'Volunteer'],
+      availability: data.time_slot,
+      resume_key: resumeKey,
+      status: 'submitted'
+    };
+
+    console.log('Inserting Volunteer Application:', applicationPayload);
+
     const { data: result, error } = await this.client
       .from('volunteer_applications')
-      .insert([{
-        role_id: roleId,
-        volunteer_auth_id: volunteerAuthId,
-        motivation: motivationStr,
-        skills: [role || 'Volunteer'],
-        availability: data.time_slot,
-        resume_key: resumeKey,
-        status: 'submitted'
-      }])
+      .insert([applicationPayload])
       .select();
       
     if (error) {
-      this.logger.error(`Supabase Volunteer Error: ${error.message}`);
+      this.logger.error(`Supabase Volunteer Error: ${error.message} (Code: ${error.code})`);
+      this.logger.error(`Failed Payload: ${JSON.stringify(applicationPayload)}`);
       throw new Error(`Supabase Error: ${error.message}`);
     }
     return result;

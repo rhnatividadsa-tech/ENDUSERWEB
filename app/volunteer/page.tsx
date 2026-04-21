@@ -147,13 +147,14 @@ export default function VolunteerPage() {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to submit application');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to submit application');
         }
 
         setShowErrors(false);
         setStep(4);
-      } catch (error) {
-        alert('Failed to submit application. Please try again.');
+      } catch (error: any) {
+        alert(`Failed to submit application: ${error.message}`);
         console.error(error);
       } finally {
         setIsSubmitting(false);
